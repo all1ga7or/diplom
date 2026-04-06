@@ -267,8 +267,6 @@ option { background: var(--card); }
   gap: 20px;
   flex-wrap: nowrap;
   margin-top: 8px;
-  overflow-x: auto;
-  padding-bottom: 12px;
 }
 
 .matrix-block { flex: 1; min-width: 140px; }

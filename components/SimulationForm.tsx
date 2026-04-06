@@ -91,7 +91,13 @@ export default function SimulationForm({ onStart, disabled, activeScenario, onSc
           <select
             className="field-input"
             value={dimension}
-            onChange={e => resizeDimension(Number(e.target.value))}
+            onChange={e => {
+              const newM = Number(e.target.value);
+              resizeDimension(newM);
+              if (activeScenario && activeScenario.m !== newM) {
+                onScenarioChange(null);
+              }
+            }}
           >
             {[2,3,4,5,6,7,8,9,10].map(v => <option key={v} value={v}>{v}</option>)}
           </select>
@@ -166,7 +172,7 @@ export default function SimulationForm({ onStart, disabled, activeScenario, onSc
           {/* A */}
           <div className="matrix-block" style={{ flexShrink: 0 }}>
             <div className="matrix-label">Матриця <span>A</span></div>
-            <div className="matrix-a-wrapper" style={{ maxWidth: '370px', overflowX: 'auto', paddingBottom: '8px' }}>
+            <div className="matrix-a-wrapper" style={{ maxWidth: '300px', overflowX: 'auto', paddingBottom: '8px' }}>
               <div className="matrix-grid">
                 {A.map((row, i) => (
                   <div key={i} className="matrix-row">

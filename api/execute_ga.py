@@ -262,7 +262,7 @@ def run_simulation(data):
         last_solution = np.concatenate([A_opt.flatten(), u_opt])
         elapsed = time.time() - t_start
 
-        if scenario:
+        if scenario and len(scenario["alpha"]) == m:
             alpha = np.array(scenario["alpha"])
             beta  = np.array(scenario["beta"])
             gamma = np.array(scenario["gamma"])
