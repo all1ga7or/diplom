@@ -181,6 +181,8 @@ export default function Home() {
               setStats(prev => ({ ...prev, runId: payload.run_id }));
               addLog('■ Симуляцію завершено', 'success');
               addLog(`  Run ID: #${payload.run_id}  |  Збережено в Neon DB`, 'info');
+              setRunning(false);
+              return;
             }
           } catch {
             // Ignore parse errors on incomplete SSE chunks
