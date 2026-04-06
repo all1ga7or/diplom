@@ -742,96 +742,66 @@ option { background: var(--card); }
   width: 44px;
 }
 
-.perturbation-value {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.68rem;
-  font-weight: 600;
-  min-width: 36px;
-  text-align: center;
+.perturbation-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  width: 44px;
 }
 
-.perturbation-index {
-  font-size: 0.65rem;
+.spin-btn {
+  width: 100%;
+  height: 24px;
+  background: var(--card);
+  border: none;
   color: var(--muted);
-  font-family: 'JetBrains Mono', monospace;
-}
-.perturbation-index sub {
-  font-size: 0.55rem;
-}
-
-.vertical-slider-track {
-  position: relative;
+  font-size: 0.7rem;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.15s;
 }
 
-.slider-midline {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 2px;
-  height: 0;
-  pointer-events: none;
+.spin-btn:hover {
+  background: var(--border);
+  color: var(--text);
 }
 
-.vertical-slider {
-  writing-mode: vertical-lr;
-  direction: rtl;
-  height: 180px;
-  width: 28px;
-  appearance: none;
-  -webkit-appearance: none;
+.spin-btn:active {
+  background: var(--accent);
+  color: white;
+}
+
+.spin-btn.up {
+  border-bottom: 1px solid var(--border);
+}
+
+.spin-btn.down {
+  border-top: 1px solid var(--border);
+}
+
+.spin-input {
+  width: 100%;
+  height: 36px;
   background: transparent;
+  border: none;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
   outline: none;
-  cursor: pointer;
+  -moz-appearance: textfield;
 }
 
-.vertical-slider::-webkit-slider-runnable-track {
-  width: 6px;
-  height: 100%;
-  background: linear-gradient(to top, var(--red), var(--border) 45%, var(--border) 55%, var(--green));
-  border-radius: 3px;
-}
-
-.vertical-slider::-webkit-slider-thumb {
+.spin-input::-webkit-outer-spin-button,
+.spin-input::-webkit-inner-spin-button {
   -webkit-appearance: none;
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  background: var(--accent);
-  border-radius: 50%;
-  cursor: grab;
-  border: 2px solid var(--card);
-  box-shadow: 0 0 6px rgba(56, 189, 248, 0.5);
-  margin-left: -5px;
-  transition: box-shadow 0.15s;
-}
-
-.vertical-slider::-webkit-slider-thumb:hover {
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
-}
-
-.vertical-slider:active::-webkit-slider-thumb {
-  cursor: grabbing;
-}
-
-/* Firefox vertical slider */
-.vertical-slider::-moz-range-track {
-  width: 6px;
-  height: 100%;
-  background: linear-gradient(to top, var(--red), var(--border) 45%, var(--border) 55%, var(--green));
-  border-radius: 3px;
-}
-
-.vertical-slider::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
-  background: var(--accent);
-  border-radius: 50%;
-  cursor: grab;
-  border: 2px solid var(--card);
+  margin: 0;
 }
 
 .perturbation-actions {

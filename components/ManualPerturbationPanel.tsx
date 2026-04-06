@@ -44,20 +44,34 @@ export default function ManualPerturbationPanel({ dimension, step, total, k, onA
       <div className="perturbation-sliders">
         {values.map((val, i) => (
           <div key={i} className="perturbation-slider-col">
-            <span className="perturbation-value" style={{ color: val >= 1 ? '#10b981' : '#f87171' }}>
-              {val.toFixed(2)}
-            </span>
-            <div className="vertical-slider-track">
+            <div className="perturbation-spinner">
+              <button
+                className="spin-btn up"
+                onClick={() => updateVec(setter, i, Math.min(2.0, val + 0.05))}
+                title="Збільшити на 0.05"
+              >
+                ▲
+              </button>
               <input
-                type="range"
-                className="vertical-slider"
-                min={0.5}
-                max={1.5}
-                step={0.01}
-                value={val}
-                onChange={e => updateVec(setter, i, Number(e.target.value))}
+                type="number"
+                step="0.05"
+                min="0.1"
+                max="2.0"
+                className="spin-input"
+                value={val.toFixed(2)}
+                onChange={(e) => {
+                  const v = parseFloat(e.target.value);
+                  if (!isNaN(v)) updateVec(setter, i, v);
+                }}
+                style={{ color: val >= 1 ? '#10b981' : '#f87171' }}
               />
-              <div className="slider-midline" />
+              <button
+                className="spin-btn down"
+                onClick={() => updateVec(setter, i, Math.max(0.1, val - 0.05))}
+                title="Зменшити на 0.05"
+              >
+                ▼
+              </button>
             </div>
             <span className="perturbation-index">{symbol}<sub>{i + 1}</sub></span>
           </div>
@@ -75,8 +89,7 @@ export default function ManualPerturbationPanel({ dimension, step, total, k, onA
         </div>
         <p className="perturbation-desc">
           Налаштуйте коефіцієнти збурень перед наступною ітерацією ГА.
-          Значення <strong>1.0</strong> = без змін. Перетягніть повзунок <strong>вгору</strong> для збільшення,{' '}
-          <strong>вниз</strong> для зменшення.
+          Значення <strong>1.0</strong> = без змін. Використовуйте стрілки (крок 0.05) або натисніть на значення для ручного введення.
         </p>
 
         {renderSliderGroup('Вартість', 'α', alpha, setAlpha, '#f87171')}
