@@ -217,9 +217,15 @@ export default function ScenariosPage() {
                         ]).map(([vals, setter], j) => (
                           <td key={j} style={{ padding: '4px 6px', textAlign: 'center' }}>
                             <input
-                              type="number" step="0.01" min="0.5" max="2"
+                              type="number" step="0.05" min="0.1" max="2.0"
                               value={vals[i]}
                               onChange={e => updateVec(setter, i, e.target.value)}
+                              onBlur={e => {
+                                let v = parseFloat(e.target.value);
+                                if (isNaN(v)) v = 1.0;
+                                v = Math.min(2.0, Math.max(0.1, v));
+                                updateVec(setter, i, String(v));
+                              }}
                               style={{ width: 70, background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)', borderRadius: 5, padding: '4px 6px', textAlign: 'center', fontFamily: 'JetBrains Mono', fontSize: '0.8rem' }}
                             />
                           </td>

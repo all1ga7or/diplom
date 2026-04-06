@@ -79,6 +79,36 @@ export default function ChartPanel({
 
   const isPerturbTab = activeTab.startsWith('p_');
 
+  const renderCustomLegend = (props: any, expectedKeys: string[], extraItems: any[] = []) => {
+    const { payload } = props;
+    if (!payload) return null;
+    
+    // Sort the payload based on the mathematical exact order in expectedKeys
+    const sortedPayload = [...payload].sort((a, b) => {
+      return expectedKeys.indexOf(a.value) - expectedKeys.indexOf(b.value);
+    });
+
+    const items = [...sortedPayload, ...extraItems];
+
+    return (
+      <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '16px' }}>
+        {items.map((entry: any, index: number) => {
+          const color = entry.color || entry.payload?.stroke || '#ccc';
+          return (
+            <li key={`item-${index}`} style={{ display: 'inline-flex', alignItems: 'center', fontSize: '0.75rem', color: '#cbd5e1' }}>
+              <span style={{ 
+                marginRight: 6, width: 12, height: 2, backgroundColor: color, 
+                borderBottom: entry.strokeDasharray ? `2px dashed ${color}` : 'none',
+                background: entry.strokeDasharray ? 'transparent' : color
+              }}></span>
+              {entry.value}
+            </li>
+          );
+        })}
+      </ul>
+    );
+  };
+
   const renderChart = () => {
     switch (activeTab) {
       case 'bu':
@@ -129,7 +159,7 @@ export default function ChartPanel({
               <XAxis dataKey="t" stroke={TEXT_COLOR} tick={{ fontSize: 11 }} />
               <YAxis stroke={TEXT_COLOR} tick={{ fontSize: 11 }} width={55} />
               <Tooltip contentStyle={tooltipStyle} itemSorter={numericSorter} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Legend wrapperStyle={{ fontSize: 11 }} content={(props) => renderCustomLegend(props, matKeys)} />
               {matKeys.map((k, idx) => (
                 <Line key={k} type="monotone" dataKey={k} stroke={COLORS[idx % COLORS.length]}
                   strokeWidth={1.5} dot={false} name={k} />
@@ -145,7 +175,7 @@ export default function ChartPanel({
               <XAxis dataKey="t" stroke={TEXT_COLOR} tick={{ fontSize: 11 }} />
               <YAxis stroke={TEXT_COLOR} tick={{ fontSize: 11 }} width={55} />
               <Tooltip contentStyle={tooltipStyle} itemSorter={numericSorter} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Legend wrapperStyle={{ fontSize: 12 }} content={(props) => renderCustomLegend(props, vecKeys('b'))} />
               {vecKeys('b').map((k, idx) => (
                 <Line key={k} type="monotone" dataKey={k} stroke={COLORS[idx % COLORS.length]}
                   strokeWidth={2} dot={false} name={k} />
@@ -161,7 +191,7 @@ export default function ChartPanel({
               <XAxis dataKey="t" stroke={TEXT_COLOR} tick={{ fontSize: 11 }} />
               <YAxis stroke={TEXT_COLOR} tick={{ fontSize: 11 }} width={55} />
               <Tooltip contentStyle={tooltipStyle} itemSorter={numericSorter} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Legend wrapperStyle={{ fontSize: 12 }} content={(props) => renderCustomLegend(props, vecKeys('c'))} />
               {vecKeys('c').map((k, idx) => (
                 <Line key={k} type="monotone" dataKey={k} stroke={COLORS[idx % COLORS.length]}
                   strokeWidth={2} dot={false} name={k} />
@@ -177,7 +207,7 @@ export default function ChartPanel({
               <XAxis dataKey="t" stroke={TEXT_COLOR} tick={{ fontSize: 11 }} />
               <YAxis stroke={TEXT_COLOR} tick={{ fontSize: 11 }} width={55} />
               <Tooltip contentStyle={tooltipStyle} itemSorter={numericSorter} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Legend wrapperStyle={{ fontSize: 12 }} content={(props) => renderCustomLegend(props, vecKeys('u'))} />
               {vecKeys('u').map((k, idx) => (
                 <Line key={k} type="monotone" dataKey={k} stroke={COLORS[idx % COLORS.length]}
                   strokeWidth={1.5} dot={false} name={k} />
@@ -203,7 +233,10 @@ export default function ChartPanel({
           <XAxis dataKey="t" stroke={TEXT_COLOR} tick={{ fontSize: 11 }} label={{ value: 'Крок t', position: 'insideBottom', offset: -2, fill: TEXT_COLOR, fontSize: 11 }} />
           <YAxis stroke={TEXT_COLOR} tick={{ fontSize: 11 }} width={55} domain={[0.4, 1.6]} />
           <Tooltip contentStyle={tooltipStyle} itemSorter={numericSorter} />
-          <Legend wrapperStyle={{ fontSize: 12 }} />
+          <Legend wrapperStyle={{ fontSize: 12 }} content={(props) => {
+            const extra = [{ value: 'базова', color: '#475569', strokeDasharray: '6 4' }];
+            return renderCustomLegend(props, keys, extra);
+          }} />
           {keys.map((k, idx) => (
             <Line key={k} type="monotone" dataKey={k} stroke={COLORS[idx % COLORS.length]}
               strokeWidth={1.5} dot={false} name={k} />
