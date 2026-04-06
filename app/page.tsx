@@ -83,7 +83,12 @@ export default function Home() {
 
         // Update charts
         setFitnessData(prev => [...prev, { t: t + 1, fitness: step.fitness }]);
-        setBuData(prev => [...prev, { t: t + 1, adapted: step.utility, base: step.non_adapted_utility }]);
+        setBuData(prev => [...prev, { 
+          t: t + 1, 
+          adapted: step.utility, 
+          base: step.non_adapted_utility,
+          effect: step.effect_percent 
+        }]);
 
         const aPoint: ChartPoint = { t: t + 1 };
         step.A.forEach((row: number[], i: number) => row.forEach((v: number, j: number) => { aPoint[`a${i+1}${j+1}`] = v; }));

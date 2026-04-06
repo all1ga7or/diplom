@@ -60,7 +60,12 @@ export default function HistoryPage() {
       steps.forEach(step => {
         const t = step.t + 1;
         fd.push({ t, fitness: step.fitness });
-        bd.push({ t, adapted: step.utility, base: step.utility - (step.effect_percent / 100 * step.utility) });
+        bd.push({ 
+          t, 
+          adapted: step.utility, 
+          base: step.utility / (1 + step.effect_percent / 100),
+          effect: step.effect_percent
+        });
 
         const aP: ChartPoint = { t };
         step.A.forEach((row: number[], i: number) => row.forEach((v: number, j: number) => { aP[`a${i+1}${j+1}`] = v; }));

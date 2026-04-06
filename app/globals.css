@@ -107,7 +107,7 @@ h3 { font-size: 1rem;   font-weight: 600; }
 
 .two-col {
   display: grid;
-  grid-template-columns: 340px 1fr;
+  grid-template-columns: 460px 1fr;
   gap: 20px;
   align-items: start;
 }
@@ -294,14 +294,14 @@ option { background: var(--card); }
 .matrix-row  { display: flex; gap: 4px; }
 
 .matrix-cell {
-  width: 70px;
-  padding: 5px 6px;
+  width: 55px;
+  padding: 5px 4px;
   background: var(--bg);
   border: 1px solid var(--border);
   color: var(--text);
   border-radius: 5px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   text-align: center;
   outline: none;
   transition: border-color 0.15s;

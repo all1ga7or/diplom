@@ -32,6 +32,7 @@ const tooltipStyle = {
 const tabs = [
   { key: 'bu',      label: 'Пристосованість' },
   { key: 'fitness', label: 'Цільова функція' },
+  { key: 'effect',  label: 'Еко-ефект (%)' },
   { key: 'A',       label: 'Матриця A' },
   { key: 'B',       label: 'Вектор B' },
   { key: 'C',       label: 'Вектор C' },
@@ -74,6 +75,19 @@ export default function ChartPanel({ fitnessData, buData, AData, BData, CData, u
               <Tooltip contentStyle={tooltipStyle} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
               <Line type="monotone" dataKey="fitness" name="f (цільова функція)" stroke="#38bdf8" strokeWidth={2} dot={{ r: 4, fill: '#38bdf8' }} />
+            </LineChart>
+          </ResponsiveContainer>
+        );
+      case 'effect':
+        return (
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={buData} margin={{ top: 5, right: 16, bottom: 5, left: 0 }}>
+              <CartesianGrid stroke={GRID_COLOR} strokeDasharray="3 3" />
+              <XAxis dataKey="t" stroke={TEXT_COLOR} tick={{ fontSize: 11 }} label={{ value: 'Крок t', position: 'insideBottom', offset: -2, fill: TEXT_COLOR, fontSize: 11 }} />
+              <YAxis stroke={TEXT_COLOR} tick={{ fontSize: 11 }} width={55} />
+              <Tooltip contentStyle={tooltipStyle} />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Line type="monotone" dataKey="effect" name="Еко-ефект (%)" stroke="#10b981" strokeWidth={2} dot={{ r: 4, fill: '#10b981' }} />
             </LineChart>
           </ResponsiveContainer>
         );
