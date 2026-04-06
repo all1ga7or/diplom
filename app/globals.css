@@ -265,8 +265,10 @@ option { background: var(--card); }
 .matrix-container {
   display: flex;
   gap: 20px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   margin-top: 8px;
+  overflow-x: auto;
+  padding-bottom: 12px;
 }
 
 .matrix-block { flex: 1; min-width: 140px; }

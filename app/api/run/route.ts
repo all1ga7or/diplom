@@ -7,25 +7,29 @@ export async function POST(req: NextRequest) {
     // Call Python serverless function (on Vercel it runs as /api/execute_ga)
     // For local dev we simulate via a direct import approach
     // On Vercel: the Python function is deployed at the same origin
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+    const url = process.env.NEXT_PUBLIC_BASE_URL
+      ? `${process.env.NEXT_PUBLIC_BASE_URL}/api/execute_ga`
+      : 'http://localhost:3000/api/execute_ga';
 
-    const resp = await fetch(`${baseUrl}/api/execute_ga`, {
+    const pyRes = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-      // No timeout — let Vercel handle it
     });
 
-    if (!resp.ok) {
-      const err = await resp.text();
-      return NextResponse.json({ error: err }, { status: 500 });
+    if (!pyRes.ok) {
+      return NextResponse.json({ error: 'Помилка симуляції' }, { status: pyRes.status });
     }
 
-    const data = await resp.json();
-    return NextResponse.json(data);
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    // Proxy the Server-Sent Events stream from Python
+    return new Response(pyRes.body, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    });
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }

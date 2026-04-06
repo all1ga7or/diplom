@@ -187,7 +187,7 @@ export default function ScenariosPage() {
               <div className="form-field">
                 <label className="form-label">Розмірність m</label>
                 <select className="form-input" value={m} onChange={e => resizeM(Number(e.target.value))} style={{ width: 80 }}>
-                  {[2,3,4,5,6].map(v => <option key={v} value={v}>{v}</option>)}
+                  {Array.from({ length: 9 }, (_, i) => i + 2).map(v => <option key={v} value={v}>{v}</option>)}
                 </select>
               </div>
 

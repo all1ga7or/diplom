@@ -93,7 +93,7 @@ export default function SimulationForm({ onStart, disabled, activeScenario, onSc
             value={dimension}
             onChange={e => resizeDimension(Number(e.target.value))}
           >
-            {[2,3,4,5,6].map(v => <option key={v} value={v}>{v}</option>)}
+            {[2,3,4,5,6,7,8,9,10].map(v => <option key={v} value={v}>{v}</option>)}
           </select>
         </div>
 

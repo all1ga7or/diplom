@@ -21,6 +21,7 @@ export default function Home() {
   const [logs, setLogs] = useState<LogLine[]>([]);
   const [activeScenario, setActiveScenario] = useState<Scenario | null>(null);
   const [stats, setStats] = useState<Stats>({ fitness: null, utility: null, effect: null, runId: null, step: 0, total: 0 });
+  const [averages, setAverages] = useState({ sumFitness: 0, sumUtility: 0, sumEffect: 0, count: 0 });
 
   const [fitnessData, setFitnessData]   = useState<ChartPoint[]>([]);
   const [buData,      setBuData]         = useState<ChartPoint[]>([]);
@@ -39,6 +40,7 @@ export default function Home() {
     setLogs([]);
     setFitnessData([]); setBuData([]); setAData([]); setBData([]); setCData([]); setUData([]);
     setStats({ fitness: null, utility: null, effect: null, runId: null, step: 0, total: params.disturbances });
+    setAverages({ sumFitness: 0, sumUtility: 0, sumEffect: 0, count: 0 });
     setDim(params.dimension);
 
     addLog('▶ Адаптивний процес запущено', 'accent');
@@ -62,55 +64,88 @@ export default function Home() {
         return;
       }
 
-      const result = await res.json();
-      const { run_id, steps } = result;
+      if (!res.body) return;
+      
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
 
-      setStats(prev => ({ ...prev, runId: run_id }));
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n\n');
+        buffer = lines.pop() || ''; // keep last incomplete chunk
 
-      // Animate steps display
-      for (let i = 0; i < steps.length; i++) {
-        const step = steps[i];
-        const t = step.t;
+        for (const block of lines) {
+          if (!block.startsWith('data: ')) continue;
+          
+          try {
+            const payload = JSON.parse(block.substring(6));
+            
+            if (payload.error) {
+              addLog(`❌ Помилка: ${payload.error}`, 'warn');
+              setRunning(false);
+              return;
+            }
 
-        addLog(`──────── t = ${t + 1} ────────`, 'divider');
-        addLog(`  f* = ${step.fitness.toFixed(4)}`, 'accent');
-        addLog(`  Bu* = ${step.utility.toFixed(3)}  Bu₀ = ${step.non_adapted_utility.toFixed(3)}`, 'info');
-        addLog(`  Ефект адаптації: ${step.effect_percent.toFixed(1)}%`, 'success');
-        addLog(`  u* = [${step.u.map((v: number) => v.toFixed(3)).join(', ')}]`, 'info');
-        addLog(`  Час: ${step.elapsed.toFixed(2)} с`, 'info');
+            if (payload.type === 'step') {
+              const step = payload.data;
+              const t = step.t;
 
-        setStats({ fitness: step.fitness, utility: step.utility, effect: step.effect_percent, runId: run_id, step: i + 1, total: steps.length });
+              addLog(`──────── t = ${t + 1} ────────`, 'divider');
+              addLog(`  f* = ${step.fitness.toFixed(4)}`, 'accent');
+              addLog(`  Bu* = ${step.utility.toFixed(3)}  Bu₀ = ${step.non_adapted_utility.toFixed(3)}`, 'info');
+              addLog(`  Ефект адаптації: ${step.effect_percent.toFixed(1)}%`, 'success');
+              addLog(`  u* = [${step.u.map((v: number) => v.toFixed(3)).join(', ')}]`, 'info');
+              addLog(`  Час: ${step.elapsed.toFixed(2)} с`, 'info');
 
-        // Update charts
-        setFitnessData(prev => [...prev, { t: t + 1, fitness: step.fitness }]);
-        setBuData(prev => [...prev, { 
-          t: t + 1, 
-          adapted: step.utility, 
-          base: step.non_adapted_utility,
-          effect: step.effect_percent 
-        }]);
+              setStats(prev => ({ ...prev, fitness: step.fitness, utility: step.utility, effect: step.effect_percent, step: t + 1, total: params.disturbances }));
+              
+              setAverages(prev => ({
+                sumFitness: prev.sumFitness + step.fitness,
+                sumUtility: prev.sumUtility + step.utility,
+                sumEffect: prev.sumEffect + step.effect_percent,
+                count: prev.count + 1
+              }));
 
-        const aPoint: ChartPoint = { t: t + 1 };
-        step.A.forEach((row: number[], i: number) => row.forEach((v: number, j: number) => { aPoint[`a${i+1}${j+1}`] = v; }));
-        setAData(prev => [...prev, aPoint]);
+              // Update charts
+              setFitnessData(prev => [...prev, { t: t + 1, fitness: step.fitness }]);
+              setBuData(prev => [...prev, { 
+                t: t + 1, 
+                adapted: step.utility, 
+                base: step.non_adapted_utility,
+                effect: step.effect_percent 
+              }]);
 
-        const bPoint: ChartPoint = { t: t + 1 };
-        step.B.forEach((v: number, i: number) => { bPoint[`b${i+1}`] = v; });
-        setBData(prev => [...prev, bPoint]);
+              const aPoint: ChartPoint = { t: t + 1 };
+              step.A.forEach((row: number[], i: number) => row.forEach((v: number, j: number) => { aPoint[`a${i+1}${j+1}`] = v; }));
+              setAData(prev => [...prev, aPoint]);
 
-        const cPoint: ChartPoint = { t: t + 1 };
-        step.C.forEach((v: number, i: number) => { cPoint[`c${i+1}`] = v; });
-        setCData(prev => [...prev, cPoint]);
+              const bPoint: ChartPoint = { t: t + 1 };
+              step.B.forEach((v: number, i: number) => { bPoint[`b${i+1}`] = v; });
+              setBData(prev => [...prev, bPoint]);
 
-        const uPoint: ChartPoint = { t: t + 1 };
-        step.u.forEach((v: number, i: number) => { uPoint[`u${i+1}`] = v; });
-        setUData(prev => [...prev, uPoint]);
+              const cPoint: ChartPoint = { t: t + 1 };
+              step.C.forEach((v: number, i: number) => { cPoint[`c${i+1}`] = v; });
+              setCData(prev => [...prev, cPoint]);
 
-        await new Promise(r => setTimeout(r, 80)); // small delay for smooth animation
+              const uPoint: ChartPoint = { t: t + 1 };
+              step.u.forEach((v: number, i: number) => { uPoint[`u${i+1}`] = v; });
+              setUData(prev => [...prev, uPoint]);
+
+              let stepCounter = t + 1; // dummy var for step count log
+            } else if (payload.type === 'done') {
+              setStats(prev => ({ ...prev, runId: payload.run_id }));
+              addLog('■ Симуляцію завершено', 'success');
+              addLog(`  Run ID: #${payload.run_id}  |  Збережено в Neon DB`, 'info');
+            }
+          } catch (e) {
+            // Ignore parse errors on incomplete chunks that snuck through
+          }
+        }
       }
-
-      addLog('■ Симуляцію завершено', 'success');
-      addLog(`  Run ID: #${run_id}  |  Збережено в Neon DB`, 'info');
 
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Невідома помилка';
@@ -154,20 +189,27 @@ export default function Home() {
           {/* Stats */}
           <div className="stats-row">
             <div className="stat-badge">
-              <div className="stat-label">Цільова функція</div>
-              <div className="stat-value">{stats.fitness !== null ? stats.fitness.toFixed(4) : '—'}</div>
+              <div className="stat-label">Цільова ф-я (середнє)</div>
+              <div className="stat-value">
+                {averages.count > 0 ? (averages.sumFitness / averages.count).toFixed(4) : '—'}
+              </div>
             </div>
             <div className="stat-badge">
-              <div className="stat-label">Пристосованість Bu*</div>
+              <div className="stat-label">Пристосованість Bu* (сер)</div>
               <div className="stat-value" style={{ color: '#10b981' }}>
-                {stats.utility !== null ? stats.utility.toFixed(3) : '—'}
+                {averages.count > 0 ? (averages.sumUtility / averages.count).toFixed(3) : '—'}
               </div>
             </div>
             <div className="stat-badge">
-              <div className="stat-label">Еко-ефект</div>
-              <div className="stat-value" style={{ color: stats.effect !== null && stats.effect > 0 ? '#10b981' : '#f87171' }}>
-                {stats.effect !== null ? `${stats.effect > 0 ? '+' : ''}${stats.effect.toFixed(1)}%` : '—'}
-              </div>
+              <div className="stat-label">Еко-ефект (сер)</div>
+              {(() => {
+                const avgEf = averages.count > 0 ? (averages.sumEffect / averages.count) : null;
+                return (
+                  <div className="stat-value" style={{ color: avgEf !== null && avgEf >= 0 ? '#10b981' : '#f87171' }}>
+                    {avgEf !== null ? `${avgEf >= 0 ? '+' : ''}${avgEf.toFixed(2)}%` : '—'}
+                  </div>
+                );
+              })()}
             </div>
           </div>
 

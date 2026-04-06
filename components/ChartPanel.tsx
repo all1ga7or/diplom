@@ -29,6 +29,15 @@ const tooltipStyle = {
   color: '#e5e7eb',
 };
 
+const EffectDot = (props: any) => {
+  const { cx, cy, payload } = props;
+  if (!payload || payload.effect === undefined) return null;
+  const isPositive = payload.effect >= 0;
+  return (
+    <circle cx={cx} cy={cy} r={4} fill={isPositive ? '#10b981' : '#f87171'} stroke="none" />
+  );
+};
+
 const tabs = [
   { key: 'bu',      label: 'Пристосованість' },
   { key: 'fitness', label: 'Цільова функція' },
@@ -87,7 +96,7 @@ export default function ChartPanel({ fitnessData, buData, AData, BData, CData, u
               <YAxis stroke={TEXT_COLOR} tick={{ fontSize: 11 }} width={55} />
               <Tooltip contentStyle={tooltipStyle} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Line type="monotone" dataKey="effect" name="Еко-ефект (%)" stroke="#10b981" strokeWidth={2} dot={{ r: 4, fill: '#10b981' }} />
+              <Line type="monotone" dataKey="effect" name="Еко-ефект (%)" stroke="#eab308" strokeWidth={2} dot={<EffectDot />} activeDot={{ r: 6 }} />
             </LineChart>
           </ResponsiveContainer>
         );

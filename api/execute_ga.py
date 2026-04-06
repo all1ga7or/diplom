@@ -166,18 +166,22 @@ class handler(BaseHTTPRequestHandler):
     def do_POST(self):
         content_length = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(content_length)
+        
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/event-stream')
+        self.send_header('Cache-Control', 'no-cache')
+        self.send_header('Connection', 'keep-alive')
+        self.end_headers()
+        
         try:
             data = json.loads(body)
-            result = run_simulation(data)
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.end_headers()
-            self.wfile.write(json.dumps(result).encode())
+            for chunk in run_simulation(data):
+                self.wfile.write(f"data: {chunk}\n\n".encode())
+                self.wfile.flush()
         except Exception as e:
-            self.send_response(500)
-            self.send_header("Content-Type", "application/json")
-            self.end_headers()
-            self.wfile.write(json.dumps({"error": str(e)}).encode())
+            err = json.dumps({"error": str(e)})
+            self.wfile.write(f"data: {err}\n\n".encode())
+            self.wfile.flush()
 
     def do_OPTIONS(self):
         self.send_response(200)
@@ -218,6 +222,8 @@ def run_simulation(data):
     cur = conn.cursor()
     init_db(cur)
     conn.commit()
+    
+    total_start = time.time()
 
     # Save run
     cur.execute("""
@@ -282,7 +288,7 @@ def run_simulation(data):
 
         overall_best = best_fitness
 
-        steps.append({
+        step_data = {
             "t": t,
             "fitness": best_fitness,
             "utility": utility,
@@ -296,14 +302,16 @@ def run_simulation(data):
             "beta": beta.tolist(),
             "gamma": gamma.tolist(),
             "elapsed": elapsed,
-        })
+        }
+        yield json.dumps({"type": "step", "data": step_data})
 
-    # Update best value
+    # Update best value and total elapsed time
     if overall_best is not None:
-        cur.execute("UPDATE runs SET best_value=%s WHERE id=%s", (float(overall_best), run_id))
+        total_time = time.time() - total_start
+        cur.execute("UPDATE runs SET best_value=%s, elapsed_time=%s WHERE id=%s", (float(overall_best), float(total_time), run_id))
         conn.commit()
 
     cur.close()
     conn.close()
 
-    return {"run_id": run_id, "steps": steps}
+    yield json.dumps({"type": "done", "run_id": run_id})
