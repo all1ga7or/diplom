@@ -150,5 +150,32 @@
         "peekOfCode": "def stringify(value, *args, **kwargs):\n    known = _Known()\n    input = []\n    output = []\n    i = int(_index(known, input, value))\n    while i < len(input):\n        output.append(_transform(known, input, input[i]))\n        i += 1\n    return _json.dumps(output, *args, **kwargs)",
         "detail": "node_modules.flatted.python.flatted",
         "documentation": {}
+    },
+    {
+        "label": "PenalizedModel",
+        "kind": 6,
+        "importPath": "test_ga",
+        "description": "test_ga",
+        "peekOfCode": "class PenalizedModel:\n    def __init__(self, A, B, C, u_min, u_max, k, penalty=100.0):\n        self.A = A\n        self.B = B\n        self.C = C\n        self.k = k\n        self.M0 = penalty\n        self.m = len(B)\n        self.penalty_growth = 0.1\n        self.A_min = (1 - k) * A",
+        "detail": "test_ga",
+        "documentation": {}
+    },
+    {
+        "label": "GeneticAlgorithm",
+        "kind": 6,
+        "importPath": "test_ga",
+        "description": "test_ga",
+        "peekOfCode": "class GeneticAlgorithm:\n    def __init__(self, model, pop_size, generations, mutation_rate):\n        self.model = model\n        self.pop_size = pop_size\n        self.generations = generations\n        self.mutation_rate = mutation_rate\n        self.m = model.A.shape[0]\n        self.num_genes = self.m * self.m + self.m\n        self.gene_space = []\n        for i in range(self.m):",
+        "detail": "test_ga",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "test_ga",
+        "description": "test_ga",
+        "peekOfCode": "def main():\n    m = 3\n    k = 0.2\n    A_input = np.array([\n        [0.768, 0.133, 0.077],\n        [0.842, 0.075, 0.674],\n        [0.057, 0.377, 0.389]\n    ])\n    B_input = np.array([0.558, 0.638, 0.441])\n    C_input = np.array([1.52, 1.63, 1.45])",
+        "detail": "test_ga",
+        "documentation": {}
     }
 ]

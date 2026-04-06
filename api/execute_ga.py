@@ -199,10 +199,10 @@ def run_simulation(data):
     C_input = np.array(data["C"])
     scenario = data.get("scenario")
 
-    B_scale = np.sum(B_input)
-    C_scale = np.sum(C_input)
-    B_norm = B_input / B_scale
-    C_norm = C_input / C_scale
+    B_scale = 1.0
+    C_scale = 1.0
+    B_norm = B_input
+    C_norm = C_input
 
     u0 = np.ones(m)
     u_min = np.full(m, 1 - k)
@@ -265,9 +265,9 @@ def run_simulation(data):
             beta  = np.random.uniform(1 - k, 1 + k, size=B.shape)
             gamma = np.random.uniform(1 - k, 1 + k, size=A.shape[1])
 
-        A = A * gamma[np.newaxis, :]
-        B = B * beta
-        C = C * alpha
+        A = A_input.copy() * gamma[np.newaxis, :]
+        B = B_norm.copy() * beta
+        C = C_norm.copy() * alpha
 
         # Save to DB
         cur.execute("""
