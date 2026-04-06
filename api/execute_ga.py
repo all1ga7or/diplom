@@ -284,7 +284,6 @@ def run_simulation(data):
               json.dumps(u_opt.tolist()),
               json.dumps(alpha.tolist()), json.dumps(beta.tolist()), json.dumps(gamma.tolist()),
               float(elapsed), float(eco_effect_pct)))
-        conn.commit()
 
         overall_best = best_fitness
 

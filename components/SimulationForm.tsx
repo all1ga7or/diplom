@@ -167,10 +167,9 @@ export default function SimulationForm({ onStart, disabled, activeScenario, onSc
       {/* ---- Matrices ---- */}
       <div className="card">
         <div className="card-title">Вхідні дані</div>
-        <div className="matrix-container">
-
+        <div className="matrix-container" style={{ display: 'flex', gap: '20px' }}>
           {/* A */}
-          <div className="matrix-block" style={{ flexShrink: 0 }}>
+          <div style={{ paddingRight: '4px' }}>
             <div className="matrix-label">Матриця <span>A</span></div>
             <div className="matrix-a-wrapper" style={{ width: '295px', overflowX: 'auto', paddingBottom: '8px' }}>
               <div className="matrix-grid">
@@ -190,13 +189,13 @@ export default function SimulationForm({ onStart, disabled, activeScenario, onSc
           </div>
 
           {/* B */}
-          <div className="matrix-block">
+          <div style={{ width: '60px' }}>
             <div className="matrix-label">Вектор <span>B</span></div>
             <div className="vector-col">
               {B.map((val, i) => (
                 <input key={i} className="matrix-cell"
                   type="number" step="0.001"
-                  style={{ minWidth: '55px' }}
+                  style={{ minWidth: '55px', maxWidth: '55px' }}
                   value={val}
                   onChange={e => updateVec(setB, i, e.target.value)} />
               ))}
@@ -204,13 +203,13 @@ export default function SimulationForm({ onStart, disabled, activeScenario, onSc
           </div>
 
           {/* C */}
-          <div className="matrix-block">
+          <div style={{ width: '60px' }}>
             <div className="matrix-label">Вектор <span>C</span></div>
             <div className="vector-col">
               {C.map((val, i) => (
                 <input key={i} className="matrix-cell"
                   type="number" step="0.001"
-                  style={{ minWidth: '55px' }}
+                  style={{ minWidth: '55px', maxWidth: '55px' }}
                   value={val}
                   onChange={e => updateVec(setC, i, e.target.value)} />
               ))}
