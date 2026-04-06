@@ -136,6 +136,11 @@ export default function Home() {
               setUData(prev => [...prev, uPoint]);
 
               let stepCounter = t + 1; // dummy var for step count log
+              
+              // Artificial delay to ensure smooth simulation animation 
+              // even if Python buffers chunks
+              await new Promise(r => setTimeout(r, 60));
+
             } else if (payload.type === 'done') {
               setStats(prev => ({ ...prev, runId: payload.run_id }));
               addLog('■ Симуляцію завершено', 'success');

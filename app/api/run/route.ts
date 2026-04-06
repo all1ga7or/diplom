@@ -2,19 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-
-    // Call Python serverless function (on Vercel it runs as /api/execute_ga)
-    // For local dev we simulate via a direct import approach
-    // On Vercel: the Python function is deployed at the same origin
-    const url = process.env.NEXT_PUBLIC_BASE_URL
-      ? `${process.env.NEXT_PUBLIC_BASE_URL}/api/execute_ga`
-      : 'http://localhost:3000/api/execute_ga';
-
-    const pyRes = await fetch(url, {
+    const data = await req.json();
+    const origin = req.headers.get('origin') || new URL(req.url).origin || 'http://localhost:3000';
+    const pyRes = await fetch(`${origin}/api/execute_ga`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify(data),
     });
 
     if (!pyRes.ok) {

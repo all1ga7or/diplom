@@ -164,19 +164,22 @@ export default function SimulationForm({ onStart, disabled, activeScenario, onSc
         <div className="matrix-container">
 
           {/* A */}
-          <div className="matrix-block">
+          <div className="matrix-block" style={{ flexShrink: 0 }}>
             <div className="matrix-label">Матриця <span>A</span></div>
-            <div className="matrix-grid">
-              {A.map((row, i) => (
-                <div key={i} className="matrix-row">
-                  {row.map((val, j) => (
-                    <input key={j} className="matrix-cell"
-                      type="number" step="0.001"
-                      value={val}
-                      onChange={e => updateA(i, j, e.target.value)} />
-                  ))}
-                </div>
-              ))}
+            <div className="matrix-a-wrapper" style={{ maxWidth: '370px', overflowX: 'auto', paddingBottom: '8px' }}>
+              <div className="matrix-grid">
+                {A.map((row, i) => (
+                  <div key={i} className="matrix-row">
+                    {row.map((val, j) => (
+                      <input key={j} className="matrix-cell"
+                        type="number" step="0.001"
+                        style={{ minWidth: '55px' }}
+                        value={val}
+                        onChange={e => updateA(i, j, e.target.value)} />
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -187,6 +190,7 @@ export default function SimulationForm({ onStart, disabled, activeScenario, onSc
               {B.map((val, i) => (
                 <input key={i} className="matrix-cell"
                   type="number" step="0.001"
+                  style={{ minWidth: '55px' }}
                   value={val}
                   onChange={e => updateVec(setB, i, e.target.value)} />
               ))}
@@ -200,6 +204,7 @@ export default function SimulationForm({ onStart, disabled, activeScenario, onSc
               {C.map((val, i) => (
                 <input key={i} className="matrix-cell"
                   type="number" step="0.001"
+                  style={{ minWidth: '55px' }}
                   value={val}
                   onChange={e => updateVec(setC, i, e.target.value)} />
               ))}
