@@ -41,6 +41,12 @@ const EffectDot = (props: any) => {
   );
 };
 
+const numericSorter = (item: any) => {
+  const dtKeysStr = String(item.dataKey || '');
+  const digits = dtKeysStr.replace(/\D/g, '');
+  return digits ? parseInt(digits, 10) : 0;
+};
+
 const tabs = [
   { key: 'bu',      label: 'Пристосованість' },
   { key: 'fitness', label: 'Цільова функція' },
@@ -122,7 +128,7 @@ export default function ChartPanel({
               <CartesianGrid stroke={GRID_COLOR} strokeDasharray="3 3" />
               <XAxis dataKey="t" stroke={TEXT_COLOR} tick={{ fontSize: 11 }} />
               <YAxis stroke={TEXT_COLOR} tick={{ fontSize: 11 }} width={55} />
-              <Tooltip contentStyle={tooltipStyle} />
+              <Tooltip contentStyle={tooltipStyle} itemSorter={numericSorter} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
               {matKeys.map((k, idx) => (
                 <Line key={k} type="monotone" dataKey={k} stroke={COLORS[idx % COLORS.length]}
@@ -138,7 +144,7 @@ export default function ChartPanel({
               <CartesianGrid stroke={GRID_COLOR} strokeDasharray="3 3" />
               <XAxis dataKey="t" stroke={TEXT_COLOR} tick={{ fontSize: 11 }} />
               <YAxis stroke={TEXT_COLOR} tick={{ fontSize: 11 }} width={55} />
-              <Tooltip contentStyle={tooltipStyle} />
+              <Tooltip contentStyle={tooltipStyle} itemSorter={numericSorter} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
               {vecKeys('b').map((k, idx) => (
                 <Line key={k} type="monotone" dataKey={k} stroke={COLORS[idx % COLORS.length]}
@@ -154,7 +160,7 @@ export default function ChartPanel({
               <CartesianGrid stroke={GRID_COLOR} strokeDasharray="3 3" />
               <XAxis dataKey="t" stroke={TEXT_COLOR} tick={{ fontSize: 11 }} />
               <YAxis stroke={TEXT_COLOR} tick={{ fontSize: 11 }} width={55} />
-              <Tooltip contentStyle={tooltipStyle} />
+              <Tooltip contentStyle={tooltipStyle} itemSorter={numericSorter} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
               {vecKeys('c').map((k, idx) => (
                 <Line key={k} type="monotone" dataKey={k} stroke={COLORS[idx % COLORS.length]}
@@ -170,11 +176,11 @@ export default function ChartPanel({
               <CartesianGrid stroke={GRID_COLOR} strokeDasharray="3 3" />
               <XAxis dataKey="t" stroke={TEXT_COLOR} tick={{ fontSize: 11 }} />
               <YAxis stroke={TEXT_COLOR} tick={{ fontSize: 11 }} width={55} />
-              <Tooltip contentStyle={tooltipStyle} />
+              <Tooltip contentStyle={tooltipStyle} itemSorter={numericSorter} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
               {vecKeys('u').map((k, idx) => (
                 <Line key={k} type="monotone" dataKey={k} stroke={COLORS[idx % COLORS.length]}
-                  strokeWidth={2} dot={{ r: 3 }} name={k} />
+                  strokeWidth={1.5} dot={false} name={k} />
               ))}
             </LineChart>
           </ResponsiveContainer>
@@ -196,11 +202,11 @@ export default function ChartPanel({
           <CartesianGrid stroke={GRID_COLOR} strokeDasharray="3 3" />
           <XAxis dataKey="t" stroke={TEXT_COLOR} tick={{ fontSize: 11 }} label={{ value: 'Крок t', position: 'insideBottom', offset: -2, fill: TEXT_COLOR, fontSize: 11 }} />
           <YAxis stroke={TEXT_COLOR} tick={{ fontSize: 11 }} width={55} domain={[0.4, 1.6]} />
-          <Tooltip contentStyle={tooltipStyle} />
+          <Tooltip contentStyle={tooltipStyle} itemSorter={numericSorter} />
           <Legend wrapperStyle={{ fontSize: 12 }} />
           {keys.map((k, idx) => (
             <Line key={k} type="monotone" dataKey={k} stroke={COLORS[idx % COLORS.length]}
-              strokeWidth={2} dot={{ r: 3, fill: COLORS[idx % COLORS.length] }} name={k} />
+              strokeWidth={1.5} dot={false} name={k} />
           ))}
           {/* Reference line at 1.0 */}
           <Line type="monotone" dataKey={() => 1.0} stroke="#475569" strokeWidth={1} strokeDasharray="6 4" dot={false} name="базова (1.0)" />

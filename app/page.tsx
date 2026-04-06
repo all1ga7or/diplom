@@ -373,13 +373,13 @@ export default function Home() {
     <div>
       <div style={{ marginBottom: '20px' }}>
         <h1 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: '4px' }}>
-          Еволюційне моделювання
+          Система імітаційного моделювання сценаріїв роботи енергетичної системи
           <span style={{ marginLeft: 10, fontSize: '0.75rem', fontWeight: 400, color: 'var(--muted)', verticalAlign: 'middle' }}>
-            слабконелінійних систем
+            на основі еволюційних алгоритмів
           </span>
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>
-          Адаптивна оптимізація за допомогою генетичного алгоритму
+          Демонстраційно-навчальний симулятор для дослідження моделей та методів
         </p>
       </div>
 
