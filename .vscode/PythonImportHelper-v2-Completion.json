@@ -53,6 +53,14 @@
         "documentation": {}
     },
     {
+        "label": "BaseHTTPRequestHandler",
+        "importPath": "http.server",
+        "description": "http.server",
+        "isExtraImport": true,
+        "detail": "http.server",
+        "documentation": {}
+    },
+    {
         "label": "PenalizedModel",
         "kind": 6,
         "importPath": "api.execute_ga",
@@ -113,6 +121,69 @@
         "description": "api.execute_ga",
         "peekOfCode": "DATABASE_URL = os.environ.get(\"DATABASE_URL\", \"\")\n# ==================== DB HELPERS ====================\ndef get_conn():\n    return psycopg2.connect(DATABASE_URL, sslmode=\"require\")\ndef init_db(cur):\n    cur.execute(\"\"\"\n    CREATE TABLE IF NOT EXISTS runs (\n        id SERIAL PRIMARY KEY,\n        timestamp TIMESTAMPTZ DEFAULT NOW(),\n        dimension INTEGER, population INTEGER, generations INTEGER,",
         "detail": "api.execute_ga",
+        "documentation": {}
+    },
+    {
+        "label": "PenalizedModel",
+        "kind": 6,
+        "importPath": "api.execute_step",
+        "description": "api.execute_step",
+        "peekOfCode": "class PenalizedModel:\n    def __init__(self, A, B, C, u_min, u_max, k, penalty=100.0):\n        self.A = A\n        self.B = B\n        self.C = C\n        self.k = k\n        self.M0 = penalty\n        self.m = len(B)\n        self.penalty_growth = 0.1\n        self.A_min = (1 - k) * A",
+        "detail": "api.execute_step",
+        "documentation": {}
+    },
+    {
+        "label": "GeneticAlgorithm",
+        "kind": 6,
+        "importPath": "api.execute_step",
+        "description": "api.execute_step",
+        "peekOfCode": "class GeneticAlgorithm:\n    def __init__(self, model, pop_size, generations, mutation_rate):\n        self.model = model\n        self.pop_size = pop_size\n        self.generations = generations\n        self.mutation_rate = mutation_rate\n        self.m = model.A.shape[0]\n        self.num_genes = self.m * self.m + self.m\n        self.gene_space = []\n        for i in range(self.m):",
+        "detail": "api.execute_step",
+        "documentation": {}
+    },
+    {
+        "label": "handler",
+        "kind": 6,
+        "importPath": "api.execute_step",
+        "description": "api.execute_step",
+        "peekOfCode": "class handler(BaseHTTPRequestHandler):\n    def do_POST(self):\n        content_length = int(self.headers.get(\"Content-Length\", 0))\n        body = self.rfile.read(content_length)\n        try:\n            data = json.loads(body)\n            result = run_single_step(data)\n            self.send_response(200)\n            self.send_header(\"Content-Type\", \"application/json\")\n            self.end_headers()",
+        "detail": "api.execute_step",
+        "documentation": {}
+    },
+    {
+        "label": "get_conn",
+        "kind": 2,
+        "importPath": "api.execute_step",
+        "description": "api.execute_step",
+        "peekOfCode": "def get_conn():\n    return psycopg2.connect(DATABASE_URL, sslmode=\"require\")\ndef init_db(cur):\n    cur.execute(\"\"\"\n    CREATE TABLE IF NOT EXISTS runs (\n        id SERIAL PRIMARY KEY,\n        timestamp TIMESTAMPTZ DEFAULT NOW(),\n        dimension INTEGER, population INTEGER, generations INTEGER,\n        mutation REAL, disturbances_t INTEGER, k REAL,\n        best_value REAL, elapsed_time REAL, is_manual INTEGER DEFAULT 0",
+        "detail": "api.execute_step",
+        "documentation": {}
+    },
+    {
+        "label": "init_db",
+        "kind": 2,
+        "importPath": "api.execute_step",
+        "description": "api.execute_step",
+        "peekOfCode": "def init_db(cur):\n    cur.execute(\"\"\"\n    CREATE TABLE IF NOT EXISTS runs (\n        id SERIAL PRIMARY KEY,\n        timestamp TIMESTAMPTZ DEFAULT NOW(),\n        dimension INTEGER, population INTEGER, generations INTEGER,\n        mutation REAL, disturbances_t INTEGER, k REAL,\n        best_value REAL, elapsed_time REAL, is_manual INTEGER DEFAULT 0\n    )\"\"\")\n    cur.execute(\"\"\"",
+        "detail": "api.execute_step",
+        "documentation": {}
+    },
+    {
+        "label": "run_single_step",
+        "kind": 2,
+        "importPath": "api.execute_step",
+        "description": "api.execute_step",
+        "peekOfCode": "def run_single_step(data):\n    k = data[\"k\"]\n    pop = data[\"population\"]\n    gens = data[\"generations\"]\n    mut = data[\"mutation\"]\n    t = data[\"t\"]\n    T = data[\"disturbances\"]\n    run_id = data.get(\"run_id\")\n    A_current = np.array(data[\"A_current\"])\n    B_current = np.array(data[\"B_current\"])",
+        "detail": "api.execute_step",
+        "documentation": {}
+    },
+    {
+        "label": "DATABASE_URL",
+        "kind": 5,
+        "importPath": "api.execute_step",
+        "description": "api.execute_step",
+        "peekOfCode": "DATABASE_URL = os.environ.get(\"DATABASE_URL\", \"\")\ndef get_conn():\n    return psycopg2.connect(DATABASE_URL, sslmode=\"require\")\ndef init_db(cur):\n    cur.execute(\"\"\"\n    CREATE TABLE IF NOT EXISTS runs (\n        id SERIAL PRIMARY KEY,\n        timestamp TIMESTAMPTZ DEFAULT NOW(),\n        dimension INTEGER, population INTEGER, generations INTEGER,\n        mutation REAL, disturbances_t INTEGER, k REAL,",
+        "detail": "api.execute_step",
         "documentation": {}
     },
     {

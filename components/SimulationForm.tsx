@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react';
 import { RunParams, InitialData, Scenario } from '@/lib/types';
 
 interface Props {
-  onStart: (params: RunParams, data: InitialData, scenario: Scenario | null) => void;
+  onStart: (params: RunParams, data: InitialData, scenario: Scenario | null, manualMode: boolean) => void;
   onLoadConfig?: (cfg: RunParams & InitialData & { run_id: number }) => void;
   disabled: boolean;
   activeScenario: Scenario | null;
@@ -24,6 +24,7 @@ export default function SimulationForm({ onStart, disabled, activeScenario, onSc
   const [mutation, setMutation] = useState(0.05);
   const [disturbances, setDisturbances] = useState(10);
   const [k, setK] = useState(0.1);
+  const [manualMode, setManualMode] = useState(false);
 
   const [A, setA] = useState<number[][]>(defaultMatrix(2));
   const [B, setB] = useState<number[]>(defaultVector(2));
@@ -75,7 +76,8 @@ export default function SimulationForm({ onStart, disabled, activeScenario, onSc
     onStart(
       { dimension, population, generations, mutation, disturbances, k },
       { A, B, C },
-      activeScenario
+      manualMode ? null : activeScenario,
+      manualMode
     );
   };
 
@@ -140,27 +142,45 @@ export default function SimulationForm({ onStart, disabled, activeScenario, onSc
         </div>
       </div>
 
-      {/* ---- Active scenario ---- */}
+      {/* ---- Perturbation mode ---- */}
       <div className="card">
-        <div className="card-title">Сценарій збурень</div>
-        {activeScenario ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div className="scenario-card selected">
-              <div className="scenario-card-name">✅ {activeScenario.name}</div>
-              <div className="scenario-card-desc">{activeScenario.description}</div>
-              <div className="scenario-card-m">m = {activeScenario.m}</div>
-            </div>
-            <button className="btn btn-ghost btn-sm" onClick={() => onScenarioChange(null)}>
-              🎲 Скинути (випадкові збурення)
-            </button>
+        <div className="card-title">Режим збурень</div>
+
+        <div className="toggle-row">
+          <span className="toggle-label">🎛️ Ручне керування</span>
+          <button
+            type="button"
+            className={`toggle-switch ${manualMode ? 'active' : ''}`}
+            onClick={() => setManualMode(!manualMode)}
+          />
+        </div>
+
+        {manualMode ? (
+          <div style={{ color: 'var(--green)', fontSize: '0.82rem', padding: '10px 0 2px' }}>
+            ✋ Ви керуватимете збуреннями вручну на кожному кроці через вертикальні повзунки α, β, γ
           </div>
         ) : (
-          <div style={{ color: 'var(--muted)', fontSize: '0.82rem', padding: '8px 0' }}>
-            🎲 Режим випадкових збурень<br />
-            <a href="/scenarios" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.78rem' }}>
-              → Перейти до менеджера сценаріїв
-            </a>
-          </div>
+          <>
+            {activeScenario ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
+                <div className="scenario-card selected">
+                  <div className="scenario-card-name">✅ {activeScenario.name}</div>
+                  <div className="scenario-card-desc">{activeScenario.description}</div>
+                  <div className="scenario-card-m">m = {activeScenario.m}</div>
+                </div>
+                <button className="btn btn-ghost btn-sm" onClick={() => onScenarioChange(null)}>
+                  🎲 Скинути (випадкові збурення)
+                </button>
+              </div>
+            ) : (
+              <div style={{ color: 'var(--muted)', fontSize: '0.82rem', padding: '10px 0 2px' }}>
+                🎲 Режим випадкових збурень<br />
+                <a href="/scenarios" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.78rem' }}>
+                  → Перейти до менеджера сценаріїв
+                </a>
+              </div>
+            )}
+          </>
         )}
       </div>
 

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const maxDuration = 60; // Allow enough time for Python execution
+
 export async function POST(req: NextRequest) {
   try {
     const data = await req.json();

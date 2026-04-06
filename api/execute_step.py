@@ -8,7 +8,6 @@ from http.server import BaseHTTPRequestHandler
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
 
-# ==================== DB HELPERS ====================
 def get_conn():
     return psycopg2.connect(DATABASE_URL, sslmode="require")
 
@@ -34,12 +33,6 @@ def init_db(cur):
         a TEXT, b TEXT, c TEXT, u TEXT,
         alpha TEXT, beta TEXT, gamma TEXT,
         elapsed_time REAL, effect_percent REAL
-    )""")
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS scenarios (
-        id SERIAL PRIMARY KEY,
-        name TEXT UNIQUE, description TEXT,
-        m INTEGER, alpha TEXT, beta TEXT, gamma TEXT
     )""")
 
 
@@ -97,7 +90,7 @@ class GeneticAlgorithm:
     def initialize_population(self, last_best=None):
         if last_best is not None:
             pop = np.tile(last_best, (self.pop_size, 1))
-            pop += np.random.normal(0, 0.05, pop.shape) # slightly higher noise to escape local minima
+            pop += np.random.normal(0, 0.05, pop.shape)
             for i in range(self.num_genes):
                 low, high = self.gene_space[i]
                 pop[:, i] = np.clip(pop[:, i], low, high)
@@ -123,9 +116,9 @@ class GeneticAlgorithm:
             for idx in idxs:
                 low, high = self.gene_space[idx]
                 if np.random.rand() < 0.5:
-                    individual[idx] = np.random.uniform(low, high) # exploration
+                    individual[idx] = np.random.uniform(low, high)
                 else:
-                    mutated = individual[idx] + np.random.normal(0, (high - low) * 0.1) # exploitation / local search
+                    mutated = individual[idx] + np.random.normal(0, (high - low) * 0.1)
                     individual[idx] = np.clip(mutated, low, high)
         return offspring
 
@@ -166,22 +159,18 @@ class handler(BaseHTTPRequestHandler):
     def do_POST(self):
         content_length = int(self.headers.get("Content-Length", 0))
         body = self.rfile.read(content_length)
-        
-        self.send_response(200)
-        self.send_header('Content-Type', 'text/event-stream')
-        self.send_header('Cache-Control', 'no-cache')
-        self.send_header('Connection', 'keep-alive')
-        self.end_headers()
-        
         try:
             data = json.loads(body)
-            for chunk in run_simulation(data):
-                self.wfile.write(f"data: {chunk}\n\n".encode())
-                self.wfile.flush()
+            result = run_single_step(data)
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps(result).encode())
         except Exception as e:
-            err = json.dumps({"error": str(e)})
-            self.wfile.write(f"data: {err}\n\n".encode())
-            self.wfile.flush()
+            self.send_response(500)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps({"error": str(e)}).encode())
 
     def do_OPTIONS(self):
         self.send_response(200)
@@ -191,127 +180,105 @@ class handler(BaseHTTPRequestHandler):
         self.end_headers()
 
 
-def run_simulation(data):
-    m = data["dimension"]
-    T = data["disturbances"]
+def run_single_step(data):
     k = data["k"]
     pop = data["population"]
     gens = data["generations"]
     mut = data["mutation"]
-    A_input = np.array(data["A"])
-    B_input = np.array(data["B"])
-    C_input = np.array(data["C"])
-    scenario = data.get("scenario")
+    t = data["t"]
+    T = data["disturbances"]
+    run_id = data.get("run_id")
 
-    B_scale = 1.0
-    C_scale = 1.0
-    B_norm = B_input
-    C_norm = C_input
+    A_current = np.array(data["A_current"])
+    B_current = np.array(data["B_current"])
+    C_current = np.array(data["C_current"])
+    A_input = np.array(data["A_input"])
+    B_input = np.array(data["B_input"])
+    C_input = np.array(data["C_input"])
 
-    actual_m = len(B_input)
+    alpha = np.array(data["alpha"])
+    beta = np.array(data["beta"])
+    gamma = np.array(data["gamma"])
+
+    last_solution = np.array(data["last_solution"]) if data.get("last_solution") else None
+
+    actual_m = len(B_current)
     u0 = np.ones(actual_m)
     u_min = np.full(actual_m, 1 - k)
     u_max = np.full(actual_m, 1 + k)
-
-    A = A_input.copy()
-    B = B_norm.copy()
-    C = C_norm.copy()
-
-    is_manual = 1 if scenario else 0
 
     conn = get_conn()
     cur = conn.cursor()
     init_db(cur)
     conn.commit()
-    
-    total_start = time.time()
 
-    # Save run
-    cur.execute("""
-        INSERT INTO runs (dimension, population, generations, mutation, disturbances_t, k, is_manual)
-        VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id
-    """, (int(m), int(pop), int(gens), float(mut), int(T), float(k), is_manual))
-    run_id = cur.fetchone()[0]
-
-    cur.execute("""
-        INSERT INTO run_config (run_id, a0, b0, c0, u_min, u_max)
-        VALUES (%s, %s, %s, %s, %s, %s)
-    """, (run_id,
-          json.dumps(A_input.tolist()),
-          json.dumps(B_input.tolist()),
-          json.dumps(C_input.tolist()),
-          json.dumps(u_min.tolist()),
-          json.dumps(u_max.tolist())))
-    conn.commit()
-
-    steps = []
-    last_solution = None
-    overall_best = None
-
-    for t in range(T):
-        t_start = time.time()
-        model = PenalizedModel(A=A, B=B, C=C, u_min=u_min, u_max=u_max, k=k)
-        ga = GeneticAlgorithm(model=model, pop_size=pop, generations=gens, mutation_rate=mut)
-        best_fitness, (A_opt, u_opt) = ga.run(last_best=last_solution)
-        best_fitness = float(abs(best_fitness))  # store positive as native python float
-
-        utility = float(np.dot(B, u_opt)) * B_scale
-        non_adapted_utility = float(np.dot(B, u0)) * B_scale
-        eco_effect = utility - non_adapted_utility
-        eco_effect_pct = (eco_effect / non_adapted_utility * 100) if non_adapted_utility != 0 else 0
-
-        last_solution = np.concatenate([A_opt.flatten(), u_opt])
-        elapsed = time.time() - t_start
-
-        if scenario and len(scenario["alpha"]) == actual_m:
-            alpha = np.array(scenario["alpha"])
-            beta  = np.array(scenario["beta"])
-            gamma = np.array(scenario["gamma"])
-        else:
-            alpha = np.random.uniform(1 - k, 1 + k, size=actual_m)
-            beta  = np.random.uniform(1 - k, 1 + k, size=actual_m)
-            gamma = np.random.uniform(1 - k, 1 + k, size=A_input.shape[1])
-
-        A = A_input.copy() * gamma[np.newaxis, :]
-        B = B_norm.copy() * beta
-        C = C_norm.copy() * alpha
-
-        # Save to DB
+    # Create run record on first step
+    if run_id is None:
         cur.execute("""
-            INSERT INTO evolution (run_id, t, fitness, utility, a, b, c, u, alpha, beta, gamma, elapsed_time, effect_percent)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (run_id, int(t), float(best_fitness), float(utility),
-              json.dumps(A.tolist()), json.dumps(B.tolist()), json.dumps(C.tolist()),
-              json.dumps(u_opt.tolist()),
-              json.dumps(alpha.tolist()), json.dumps(beta.tolist()), json.dumps(gamma.tolist()),
-              float(elapsed), float(eco_effect_pct)))
-
-        overall_best = best_fitness
-
-        step_data = {
-            "t": t,
-            "fitness": best_fitness,
-            "utility": utility,
-            "non_adapted_utility": non_adapted_utility,
-            "effect_percent": eco_effect_pct,
-            "u": u_opt.tolist(),
-            "A": A.tolist(),
-            "B": B.tolist(),
-            "C": C.tolist(),
-            "alpha": alpha.tolist(),
-            "beta": beta.tolist(),
-            "gamma": gamma.tolist(),
-            "elapsed": elapsed,
-        }
-        yield json.dumps({"type": "step", "data": step_data})
-
-    # Update best value and total elapsed time
-    if overall_best is not None:
-        total_time = time.time() - total_start
-        cur.execute("UPDATE runs SET best_value=%s, elapsed_time=%s WHERE id=%s", (float(overall_best), float(total_time), run_id))
+            INSERT INTO runs (dimension, population, generations, mutation, disturbances_t, k, is_manual)
+            VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id
+        """, (int(actual_m), int(pop), int(gens), float(mut), int(T), float(k), 2))
+        run_id = cur.fetchone()[0]
+        cur.execute("""
+            INSERT INTO run_config (run_id, a0, b0, c0, u_min, u_max)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (run_id,
+              json.dumps(A_input.tolist()),
+              json.dumps(B_input.tolist()),
+              json.dumps(C_input.tolist()),
+              json.dumps(u_min.tolist()),
+              json.dumps(u_max.tolist())))
         conn.commit()
+
+    # Run GA for one step
+    t_start = time.time()
+    model = PenalizedModel(A=A_current, B=B_current, C=C_current, u_min=u_min, u_max=u_max, k=k)
+    ga = GeneticAlgorithm(model=model, pop_size=pop, generations=gens, mutation_rate=mut)
+    best_fitness, (A_opt, u_opt) = ga.run(last_best=last_solution)
+    best_fitness = float(abs(best_fitness))
+
+    utility = float(np.dot(B_current, u_opt))
+    non_adapted_utility = float(np.dot(B_current, u0))
+    eco_effect = utility - non_adapted_utility
+    eco_effect_pct = (eco_effect / non_adapted_utility * 100) if non_adapted_utility != 0 else 0
+
+    new_last_solution = np.concatenate([A_opt.flatten(), u_opt])
+    elapsed = time.time() - t_start
+
+    # Save evolution step
+    cur.execute("""
+        INSERT INTO evolution (run_id, t, fitness, utility, a, b, c, u, alpha, beta, gamma, elapsed_time, effect_percent)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    """, (run_id, int(t), float(best_fitness), float(utility),
+          json.dumps(A_current.tolist()), json.dumps(B_current.tolist()), json.dumps(C_current.tolist()),
+          json.dumps(u_opt.tolist()),
+          json.dumps(alpha.tolist()), json.dumps(beta.tolist()), json.dumps(gamma.tolist()),
+          float(elapsed), float(eco_effect_pct)))
+
+    # Update run totals
+    cur.execute("""
+        UPDATE runs SET best_value = GREATEST(COALESCE(best_value, 0), %s),
+            elapsed_time = COALESCE(elapsed_time, 0) + %s WHERE id = %s
+    """, (float(best_fitness), float(elapsed), run_id))
+    conn.commit()
 
     cur.close()
     conn.close()
 
-    yield json.dumps({"type": "done", "run_id": run_id})
+    return {
+        "run_id": run_id,
+        "t": t,
+        "fitness": best_fitness,
+        "utility": utility,
+        "non_adapted_utility": non_adapted_utility,
+        "effect_percent": eco_effect_pct,
+        "u": u_opt.tolist(),
+        "A": A_current.tolist(),
+        "B": B_current.tolist(),
+        "C": C_current.tolist(),
+        "alpha": alpha.tolist(),
+        "beta": beta.tolist(),
+        "gamma": gamma.tolist(),
+        "elapsed": elapsed,
+        "last_solution": new_last_solution.tolist(),
+    }
