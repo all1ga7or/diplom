@@ -1,0 +1,154 @@
+[
+    {
+        "label": "json",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
+        "documentation": {}
+    },
+    {
+        "label": "os",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "os",
+        "description": "os",
+        "detail": "os",
+        "documentation": {}
+    },
+    {
+        "label": "time",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "time",
+        "description": "time",
+        "detail": "time",
+        "documentation": {}
+    },
+    {
+        "label": "numpy",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "numpy",
+        "description": "numpy",
+        "detail": "numpy",
+        "documentation": {}
+    },
+    {
+        "label": "psycopg2",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "psycopg2",
+        "description": "psycopg2",
+        "detail": "psycopg2",
+        "documentation": {}
+    },
+    {
+        "label": "BaseHTTPRequestHandler",
+        "importPath": "http.server",
+        "description": "http.server",
+        "isExtraImport": true,
+        "detail": "http.server",
+        "documentation": {}
+    },
+    {
+        "label": "PenalizedModel",
+        "kind": 6,
+        "importPath": "api.execute_ga",
+        "description": "api.execute_ga",
+        "peekOfCode": "class PenalizedModel:\n    def __init__(self, A, B, C, u_min, u_max, k, penalty=100.0):\n        self.A = A\n        self.B = B\n        self.C = C\n        self.k = k\n        self.M0 = penalty\n        self.m = len(B)\n        self.penalty_growth = 0.1\n        self.A_min = (1 - k) * A",
+        "detail": "api.execute_ga",
+        "documentation": {}
+    },
+    {
+        "label": "GeneticAlgorithm",
+        "kind": 6,
+        "importPath": "api.execute_ga",
+        "description": "api.execute_ga",
+        "peekOfCode": "class GeneticAlgorithm:\n    def __init__(self, model, pop_size, generations, mutation_rate):\n        self.model = model\n        self.pop_size = pop_size\n        self.generations = generations\n        self.mutation_rate = mutation_rate\n        self.m = model.A.shape[0]\n        self.num_genes = self.m * self.m + self.m\n        self.gene_space = []\n        for i in range(self.m):",
+        "detail": "api.execute_ga",
+        "documentation": {}
+    },
+    {
+        "label": "handler",
+        "kind": 6,
+        "importPath": "api.execute_ga",
+        "description": "api.execute_ga",
+        "peekOfCode": "class handler(BaseHTTPRequestHandler):\n    def do_POST(self):\n        content_length = int(self.headers.get(\"Content-Length\", 0))\n        body = self.rfile.read(content_length)\n        try:\n            data = json.loads(body)\n            result = run_simulation(data)\n            self.send_response(200)\n            self.send_header(\"Content-Type\", \"application/json\")\n            self.end_headers()",
+        "detail": "api.execute_ga",
+        "documentation": {}
+    },
+    {
+        "label": "get_conn",
+        "kind": 2,
+        "importPath": "api.execute_ga",
+        "description": "api.execute_ga",
+        "peekOfCode": "def get_conn():\n    return psycopg2.connect(DATABASE_URL, sslmode=\"require\")\ndef init_db(cur):\n    cur.execute(\"\"\"\n    CREATE TABLE IF NOT EXISTS runs (\n        id SERIAL PRIMARY KEY,\n        timestamp TIMESTAMPTZ DEFAULT NOW(),\n        dimension INTEGER, population INTEGER, generations INTEGER,\n        mutation REAL, disturbances_t INTEGER, k REAL,\n        best_value REAL, elapsed_time REAL, is_manual INTEGER DEFAULT 0",
+        "detail": "api.execute_ga",
+        "documentation": {}
+    },
+    {
+        "label": "init_db",
+        "kind": 2,
+        "importPath": "api.execute_ga",
+        "description": "api.execute_ga",
+        "peekOfCode": "def init_db(cur):\n    cur.execute(\"\"\"\n    CREATE TABLE IF NOT EXISTS runs (\n        id SERIAL PRIMARY KEY,\n        timestamp TIMESTAMPTZ DEFAULT NOW(),\n        dimension INTEGER, population INTEGER, generations INTEGER,\n        mutation REAL, disturbances_t INTEGER, k REAL,\n        best_value REAL, elapsed_time REAL, is_manual INTEGER DEFAULT 0\n    )\"\"\")\n    cur.execute(\"\"\"",
+        "detail": "api.execute_ga",
+        "documentation": {}
+    },
+    {
+        "label": "run_simulation",
+        "kind": 2,
+        "importPath": "api.execute_ga",
+        "description": "api.execute_ga",
+        "peekOfCode": "def run_simulation(data):\n    m = data[\"dimension\"]\n    T = data[\"disturbances\"]\n    k = data[\"k\"]\n    pop = data[\"population\"]\n    gens = data[\"generations\"]\n    mut = data[\"mutation\"]\n    A_input = np.array(data[\"A\"])\n    B_input = np.array(data[\"B\"])\n    C_input = np.array(data[\"C\"])",
+        "detail": "api.execute_ga",
+        "documentation": {}
+    },
+    {
+        "label": "DATABASE_URL",
+        "kind": 5,
+        "importPath": "api.execute_ga",
+        "description": "api.execute_ga",
+        "peekOfCode": "DATABASE_URL = os.environ.get(\"DATABASE_URL\", \"\")\n# ==================== DB HELPERS ====================\ndef get_conn():\n    return psycopg2.connect(DATABASE_URL, sslmode=\"require\")\ndef init_db(cur):\n    cur.execute(\"\"\"\n    CREATE TABLE IF NOT EXISTS runs (\n        id SERIAL PRIMARY KEY,\n        timestamp TIMESTAMPTZ DEFAULT NOW(),\n        dimension INTEGER, population INTEGER, generations INTEGER,",
+        "detail": "api.execute_ga",
+        "documentation": {}
+    },
+    {
+        "label": "_Known",
+        "kind": 6,
+        "importPath": "node_modules.flatted.python.flatted",
+        "description": "node_modules.flatted.python.flatted",
+        "peekOfCode": "class _Known:\n    def __init__(self):\n        self.key = []\n        self.value = []\nclass _String:\n    def __init__(self, value):\n        self.value = value\ndef _array_keys(value):\n    for i in range(len(value)):\n        yield i",
+        "detail": "node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "_String",
+        "kind": 6,
+        "importPath": "node_modules.flatted.python.flatted",
+        "description": "node_modules.flatted.python.flatted",
+        "peekOfCode": "class _String:\n    def __init__(self, value):\n        self.value = value\ndef _array_keys(value):\n    for i in range(len(value)):\n        yield i\ndef _object_keys(value):\n    for key in value:\n        yield key\ndef _is_array(value):",
+        "detail": "node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "parse",
+        "kind": 2,
+        "importPath": "node_modules.flatted.python.flatted",
+        "description": "node_modules.flatted.python.flatted",
+        "peekOfCode": "def parse(value, *args, **kwargs):\n    json = _json.loads(value, *args, **kwargs)\n    wrapped = []\n    for value in json:\n        wrapped.append(_wrap(value))\n    input = []\n    for value in wrapped:\n        if isinstance(value, _String):\n            input.append(value.value)\n        else:",
+        "detail": "node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "stringify",
+        "kind": 2,
+        "importPath": "node_modules.flatted.python.flatted",
+        "description": "node_modules.flatted.python.flatted",
+        "peekOfCode": "def stringify(value, *args, **kwargs):\n    known = _Known()\n    input = []\n    output = []\n    i = int(_index(known, input, value))\n    while i < len(input):\n        output.append(_transform(known, input, input[i]))\n        i += 1\n    return _json.dumps(output, *args, **kwargs)",
+        "detail": "node_modules.flatted.python.flatted",
+        "documentation": {}
+    }
+]
