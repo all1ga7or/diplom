@@ -216,7 +216,7 @@ def run_simulation(data):
     cur.execute("""
         INSERT INTO runs (dimension, population, generations, mutation, disturbances_t, k, is_manual)
         VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id
-    """, (m, pop, gens, mut, T, k, is_manual))
+    """, (int(m), int(pop), int(gens), float(mut), int(T), float(k), is_manual))
     run_id = cur.fetchone()[0]
 
     cur.execute("""
@@ -239,7 +239,7 @@ def run_simulation(data):
         model = PenalizedModel(A=A, B=B, C=C, u_min=u_min, u_max=u_max, k=k)
         ga = GeneticAlgorithm(model=model, pop_size=pop, generations=gens, mutation_rate=mut)
         best_fitness, (A_opt, u_opt) = ga.run(last_best=last_solution)
-        best_fitness = abs(best_fitness)  # store positive
+        best_fitness = float(abs(best_fitness))  # store positive as native python float
 
         utility = float(np.dot(B, u_opt)) * B_scale
         non_adapted_utility = float(np.dot(B, u0)) * B_scale
@@ -266,11 +266,11 @@ def run_simulation(data):
         cur.execute("""
             INSERT INTO evolution (run_id, t, fitness, utility, a, b, c, u, alpha, beta, gamma, elapsed_time, effect_percent)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (run_id, t, best_fitness, utility,
+        """, (run_id, int(t), float(best_fitness), float(utility),
               json.dumps(A.tolist()), json.dumps(B.tolist()), json.dumps(C.tolist()),
               json.dumps(u_opt.tolist()),
               json.dumps(alpha.tolist()), json.dumps(beta.tolist()), json.dumps(gamma.tolist()),
-              elapsed, eco_effect_pct))
+              float(elapsed), float(eco_effect_pct)))
         conn.commit()
 
         overall_best = best_fitness
@@ -293,7 +293,7 @@ def run_simulation(data):
 
     # Update best value
     if overall_best is not None:
-        cur.execute("UPDATE runs SET best_value=%s WHERE id=%s", (overall_best, run_id))
+        cur.execute("UPDATE runs SET best_value=%s WHERE id=%s", (float(overall_best), run_id))
         conn.commit()
 
     cur.close()
