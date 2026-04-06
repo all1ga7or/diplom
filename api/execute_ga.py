@@ -97,7 +97,10 @@ class GeneticAlgorithm:
     def initialize_population(self, last_best=None):
         if last_best is not None:
             pop = np.tile(last_best, (self.pop_size, 1))
-            pop += np.random.normal(0, 0.02, pop.shape)
+            pop += np.random.normal(0, 0.05, pop.shape) # slightly higher noise to escape local minima
+            for i in range(self.num_genes):
+                low, high = self.gene_space[i]
+                pop[:, i] = np.clip(pop[:, i], low, high)
         else:
             pop = np.zeros((self.pop_size, self.num_genes))
             for i in range(self.num_genes):
@@ -119,7 +122,11 @@ class GeneticAlgorithm:
             idxs = np.random.choice(self.num_genes, num_mutations, replace=False)
             for idx in idxs:
                 low, high = self.gene_space[idx]
-                individual[idx] = np.random.uniform(low, high)
+                if np.random.rand() < 0.5:
+                    individual[idx] = np.random.uniform(low, high) # exploration
+                else:
+                    mutated = individual[idx] + np.random.normal(0, (high - low) * 0.1) # exploitation / local search
+                    individual[idx] = np.clip(mutated, low, high)
         return offspring
 
     def run(self, last_best=None):
