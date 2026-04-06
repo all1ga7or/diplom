@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
   const { m } = await req.json();
-  const dim = Math.max(2, Math.min(6, Number(m) || 2));
+  const dim = Math.max(2, Math.min(10, Number(m) || 2));
 
   // Generate random A, B, C consistent with the model
   const A: number[][] = Array.from({ length: dim }, () =>

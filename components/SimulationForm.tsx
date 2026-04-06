@@ -172,7 +172,7 @@ export default function SimulationForm({ onStart, disabled, activeScenario, onSc
           {/* A */}
           <div className="matrix-block" style={{ flexShrink: 0 }}>
             <div className="matrix-label">Матриця <span>A</span></div>
-            <div className="matrix-a-wrapper" style={{ maxWidth: '300px', overflowX: 'auto', paddingBottom: '8px' }}>
+            <div className="matrix-a-wrapper" style={{ width: '295px', overflowX: 'auto', paddingBottom: '8px' }}>
               <div className="matrix-grid">
                 {A.map((row, i) => (
                   <div key={i} className="matrix-row">
