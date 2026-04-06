@@ -336,6 +336,54 @@ option { background: var(--card); }
 .tab-btn:hover { color: var(--text); background: var(--border); }
 .tab-btn.active { color: var(--accent); background: rgba(56,189,248,0.1); font-weight: 600; }
 
+/* Tab dropdown */
+.tab-dropdown-wrapper {
+  position: relative;
+  flex: 1;
+}
+
+.tab-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  margin-top: 4px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  animation: fadeIn 0.15s ease;
+  min-width: 160px;
+}
+
+.tab-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+  white-space: nowrap;
+}
+.tab-dropdown-item:hover { color: var(--text); background: var(--border); }
+.tab-dropdown-item.active { color: var(--accent); background: rgba(56,189,248,0.08); font-weight: 600; }
+
+.tab-dropdown-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 /* ==================== LOG PANEL ==================== */
 .log-panel {
   background: var(--bg);
@@ -731,7 +779,7 @@ option { background: var(--card); }
 .vertical-slider {
   writing-mode: vertical-lr;
   direction: rtl;
-  height: 100px;
+  height: 180px;
   width: 28px;
   appearance: none;
   -webkit-appearance: none;

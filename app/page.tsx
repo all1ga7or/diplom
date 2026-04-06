@@ -41,6 +41,9 @@ export default function Home() {
   const [BData,       setBData]          = useState<ChartPoint[]>([]);
   const [CData,       setCData]          = useState<ChartPoint[]>([]);
   const [uData,       setUData]          = useState<ChartPoint[]>([]);
+  const [alphaData,   setAlphaData]      = useState<ChartPoint[]>([]);
+  const [betaData,    setBetaData]       = useState<ChartPoint[]>([]);
+  const [gammaData,   setGammaData]      = useState<ChartPoint[]>([]);
   const [dim,         setDim]            = useState(2);
 
   // Manual mode state
@@ -102,6 +105,18 @@ export default function Home() {
     const uPoint: ChartPoint = { t: t + 1 };
     step.u.forEach((v: number, i: number) => { uPoint[`u${i+1}`] = v; });
     setUData(prev => [...prev, uPoint]);
+
+    const alphaPoint: ChartPoint = { t: t + 1 };
+    step.alpha.forEach((v: number, i: number) => { alphaPoint[`α${i+1}`] = v; });
+    setAlphaData(prev => [...prev, alphaPoint]);
+
+    const betaPoint: ChartPoint = { t: t + 1 };
+    step.beta.forEach((v: number, i: number) => { betaPoint[`β${i+1}`] = v; });
+    setBetaData(prev => [...prev, betaPoint]);
+
+    const gammaPoint: ChartPoint = { t: t + 1 };
+    step.gamma.forEach((v: number, i: number) => { gammaPoint[`γ${i+1}`] = v; });
+    setGammaData(prev => [...prev, gammaPoint]);
   }, [addLog]);
 
   // ============================================================
@@ -110,6 +125,7 @@ export default function Home() {
   const resetAll = useCallback((params: RunParams) => {
     setLogs([]);
     setFitnessData([]); setBuData([]); setAData([]); setBData([]); setCData([]); setUData([]);
+    setAlphaData([]); setBetaData([]); setGammaData([]);
     setStats({ fitness: null, utility: null, effect: null, runId: null, step: 0, total: params.disturbances });
     setAverages({ sumFitness: 0, sumUtility: 0, sumEffect: 0, count: 0 });
     setDim(params.dimension);
@@ -434,6 +450,9 @@ export default function Home() {
             BData={BData}
             CData={CData}
             uData={uData}
+            alphaData={alphaData}
+            betaData={betaData}
+            gammaData={gammaData}
             dimension={dim}
           />
 

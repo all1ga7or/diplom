@@ -13,13 +13,16 @@ interface Props {
   BData: ChartPoint[];
   CData: ChartPoint[];
   uData: ChartPoint[];
+  alphaData: ChartPoint[];
+  betaData: ChartPoint[];
+  gammaData: ChartPoint[];
   dimension: number;
 }
 
-const COLORS = ['#38bdf8','#10b981','#fbbf24','#f87171','#a78bfa','#fb923c'];
-const CARD_BG    = '#0f172a';
+const COLORS = ['#38bdf8','#10b981','#fbbf24','#f87171','#a78bfa','#fb923c','#e879f9','#34d399','#f472b6','#22d3ee'];
 const GRID_COLOR = '#1e293b';
 const TEXT_COLOR = '#94a3b8';
+const CARD_BG = '#0f172a';
 
 const tooltipStyle = {
   backgroundColor: '#131d31',
@@ -48,8 +51,18 @@ const tabs = [
   { key: 'u',       label: 'Вектор u' },
 ];
 
-export default function ChartPanel({ fitnessData, buData, AData, BData, CData, uData, dimension }: Props) {
+const perturbSubItems = [
+  { key: 'p_alpha', label: 'α (вартість)', symbol: 'α', color: '#f87171' },
+  { key: 'p_beta',  label: 'β (виробництво)', symbol: 'β', color: '#38bdf8' },
+  { key: 'p_gamma', label: 'γ (технологія)', symbol: 'γ', color: '#a78bfa' },
+];
+
+export default function ChartPanel({
+  fitnessData, buData, AData, BData, CData, uData,
+  alphaData, betaData, gammaData, dimension
+}: Props) {
   const [activeTab, setActiveTab] = useState('bu');
+  const [showPerturbMenu, setShowPerturbMenu] = useState(false);
 
   const matKeys = Array.from({ length: dimension }, (_, i) =>
     Array.from({ length: dimension }, (_, j) => `a${i+1}${j+1}`)
@@ -57,6 +70,8 @@ export default function ChartPanel({ fitnessData, buData, AData, BData, CData, u
 
   const vecKeys = (label: string) =>
     Array.from({ length: dimension }, (_, i) => `${label}${i+1}`);
+
+  const isPerturbTab = activeTab.startsWith('p_');
 
   const renderChart = () => {
     switch (activeTab) {
@@ -164,20 +179,75 @@ export default function ChartPanel({ fitnessData, buData, AData, BData, CData, u
             </LineChart>
           </ResponsiveContainer>
         );
+      case 'p_alpha':
+        return renderPerturbChart(alphaData, 'α', '#f87171');
+      case 'p_beta':
+        return renderPerturbChart(betaData, 'β', '#38bdf8');
+      case 'p_gamma':
+        return renderPerturbChart(gammaData, 'γ', '#a78bfa');
     }
   };
 
+  const renderPerturbChart = (data: ChartPoint[], symbol: string, baseColor: string) => {
+    const keys = Array.from({ length: dimension }, (_, i) => `${symbol}${i + 1}`);
+    return (
+      <ResponsiveContainer width="100%" height={220}>
+        <LineChart data={data} margin={{ top: 5, right: 16, bottom: 5, left: 0 }}>
+          <CartesianGrid stroke={GRID_COLOR} strokeDasharray="3 3" />
+          <XAxis dataKey="t" stroke={TEXT_COLOR} tick={{ fontSize: 11 }} label={{ value: 'Крок t', position: 'insideBottom', offset: -2, fill: TEXT_COLOR, fontSize: 11 }} />
+          <YAxis stroke={TEXT_COLOR} tick={{ fontSize: 11 }} width={55} domain={[0.4, 1.6]} />
+          <Tooltip contentStyle={tooltipStyle} />
+          <Legend wrapperStyle={{ fontSize: 12 }} />
+          {keys.map((k, idx) => (
+            <Line key={k} type="monotone" dataKey={k} stroke={COLORS[idx % COLORS.length]}
+              strokeWidth={2} dot={{ r: 3, fill: COLORS[idx % COLORS.length] }} name={k} />
+          ))}
+          {/* Reference line at 1.0 */}
+          <Line type="monotone" dataKey={() => 1.0} stroke="#475569" strokeWidth={1} strokeDasharray="6 4" dot={false} name="базова (1.0)" />
+        </LineChart>
+      </ResponsiveContainer>
+    );
+  };
+
   const hasData = fitnessData.length > 0;
+
+  // Find active perturbation label for button text
+  const activePerturbItem = perturbSubItems.find(p => p.key === activeTab);
 
   return (
     <div style={{ background: CARD_BG, border: '1px solid #1e293b', borderRadius: 12, padding: '16px' }}>
       <div className="tab-bar">
         {tabs.map(t => (
           <button key={t.key} className={`tab-btn${activeTab === t.key ? ' active' : ''}`}
-            onClick={() => setActiveTab(t.key)}>
+            onClick={() => { setActiveTab(t.key); setShowPerturbMenu(false); }}>
             {t.label}
           </button>
         ))}
+
+        {/* Perturbation dropdown tab */}
+        <div
+          className="tab-dropdown-wrapper"
+          onMouseEnter={() => setShowPerturbMenu(true)}
+          onMouseLeave={() => setShowPerturbMenu(false)}
+        >
+          <button className={`tab-btn${isPerturbTab ? ' active' : ''}`}>
+            {activePerturbItem ? `Збурення: ${activePerturbItem.symbol}` : 'Збурення ▾'}
+          </button>
+          {showPerturbMenu && (
+            <div className="tab-dropdown-menu">
+              {perturbSubItems.map(item => (
+                <button
+                  key={item.key}
+                  className={`tab-dropdown-item${activeTab === item.key ? ' active' : ''}`}
+                  onClick={() => { setActiveTab(item.key); setShowPerturbMenu(false); }}
+                >
+                  <span className="tab-dropdown-dot" style={{ background: item.color }} />
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {hasData ? renderChart() : (
