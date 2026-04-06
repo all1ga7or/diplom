@@ -21,6 +21,9 @@ export default function HistoryPage() {
   const [BData,       setBData]        = useState<ChartPoint[]>([]);
   const [CData,       setCData]        = useState<ChartPoint[]>([]);
   const [uData,       setUData]        = useState<ChartPoint[]>([]);
+  const [alphaData,   setAlphaData]    = useState<ChartPoint[]>([]);
+  const [betaData,    setBetaData]     = useState<ChartPoint[]>([]);
+  const [gammaData,   setGammaData]    = useState<ChartPoint[]>([]);
   const [dim,         setDim]          = useState(2);
   const [replayLogs,  setReplayLogs]   = useState<LogLine[]>([]);
 
@@ -35,6 +38,7 @@ export default function HistoryPage() {
     setSelected(run);
     setLoadingDetail(true);
     setFitnessData([]); setBuData([]); setAData([]); setBData([]); setCData([]); setUData([]);
+    setAlphaData([]); setBetaData([]); setGammaData([]);
     setReplayLogs([]);
 
     try {
@@ -56,6 +60,9 @@ export default function HistoryPage() {
       const bbd: ChartPoint[] = [];
       const cd: ChartPoint[] = [];
       const ud: ChartPoint[] = [];
+      const alP: ChartPoint[] = [];
+      const beP: ChartPoint[] = [];
+      const gaP: ChartPoint[] = [];
 
       steps.forEach(step => {
         const t = step.t + 1;
@@ -83,10 +90,29 @@ export default function HistoryPage() {
         step.u.forEach((v: number, i: number) => { uP[`u${i+1}`] = v; });
         ud.push(uP);
 
+        if (step.alpha) {
+          const aPoint: ChartPoint = { t };
+          step.alpha.forEach((v: number, i: number) => { aPoint[`α${i+1}`] = v; });
+          alP.push(aPoint);
+        }
+
+        if (step.beta) {
+          const bPoint: ChartPoint = { t };
+          step.beta.forEach((v: number, i: number) => { bPoint[`β${i+1}`] = v; });
+          beP.push(bPoint);
+        }
+
+        if (step.gamma) {
+          const gPoint: ChartPoint = { t };
+          step.gamma.forEach((v: number, i: number) => { gPoint[`γ${i+1}`] = v; });
+          gaP.push(gPoint);
+        }
+
         logs.push({ text: `  t=${t}  f*=${step.fitness.toFixed(4)}  Bu*=${step.utility.toFixed(3)}  ефект=${step.effect_percent.toFixed(1)}%`, type: 'info' });
       });
 
       setFitnessData(fd); setBuData(bd); setAData(ad); setBData(bbd); setCData(cd); setUData(ud);
+      setAlphaData(alP); setBetaData(beP); setGammaData(gaP);
       logs.push({ text: '■ Дані завантажено', type: 'success' });
       setReplayLogs(logs);
 
@@ -223,6 +249,9 @@ export default function HistoryPage() {
                     BData={BData}
                     CData={CData}
                     uData={uData}
+                    alphaData={alphaData}
+                    betaData={betaData}
+                    gammaData={gammaData}
                     dimension={dim}
                   />
                   <div className="card">
