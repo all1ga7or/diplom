@@ -89,7 +89,7 @@ export default function SimulationForm({ onStart, disabled, activeScenario, onSc
         <div className="card-title">Параметри алгоритму</div>
 
         <div className="field-row">
-          <span className="field-label">Розмірність m</span>
+          <span className="field-label">Розмірність m <span className="help-tip" title="Кількість секторів енергетичної системи (виробництво, транспорт тощо). Визначає розміри матриці A (m×m) та векторів B, C, u.">?</span></span>
           <select
             className="field-input"
             value={dimension}
@@ -106,26 +106,26 @@ export default function SimulationForm({ onStart, disabled, activeScenario, onSc
         </div>
 
         <div className="field-row">
-          <span className="field-label">Популяція</span>
+          <span className="field-label">Популяція <span className="help-tip" title="Кількість кандидатних рішень (особин) у генетичному алгоритмі. Більша популяція → точніший, але повільніший пошук оптимуму.">?</span></span>
           <input type="number" className="field-input" min={10} max={500}
             value={population} onChange={e => setPopulation(Number(e.target.value))} />
         </div>
 
         <div className="field-row">
-          <span className="field-label">Покоління</span>
+          <span className="field-label">Покоління <span className="help-tip" title="Кількість ітерацій еволюції ГА. Більше поколінь → більше часу для конвергенції до оптимуму.">?</span></span>
           <input type="number" className="field-input" min={10} max={500}
             value={generations} onChange={e => setGenerations(Number(e.target.value))} />
         </div>
 
         <div className="field-row">
-          <span className="field-label">Збурень T</span>
+          <span className="field-label">Збурень T <span className="help-tip" title="Кількість кроків симуляції. На кожному кроці ГА оптимізує систему, після чого застосовуються збурення α, β, γ.">?</span></span>
           <input type="number" className="field-input" min={1} max={50}
             value={disturbances} onChange={e => setDisturbances(Number(e.target.value))} />
         </div>
 
         <div className="slider-row">
           <div className="slider-label-row">
-            <span>Ймовірність мутації</span>
+            <span>Ймовірність мутації <span className="help-tip" title="Шанс випадкової зміни гена. Баланс між розвідкою нових рішень (висока мутація) та збереженням знайдених (низька мутація).">?</span></span>
             <span>{mutation.toFixed(3)}</span>
           </div>
           <input type="range" min={0.001} max={0.2} step={0.001}
@@ -134,7 +134,7 @@ export default function SimulationForm({ onStart, disabled, activeScenario, onSc
 
         <div className="slider-row">
           <div className="slider-label-row">
-            <span>Параметр збурення k</span>
+            <span>Параметр збурення k <span className="help-tip" title="Визначає діапазон допустимих значень uᵢ: від (1−k) до (1+k). Більше k = ширший діапазон оптимізації.">?</span></span>
             <span>{k.toFixed(2)}</span>
           </div>
           <input type="range" min={0.05} max={0.5} step={0.01}
