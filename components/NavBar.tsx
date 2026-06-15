@@ -4,9 +4,8 @@ import { usePathname } from 'next/navigation';
 
 const links = [
   { href: '/', label: '⚡ Симуляція' },
-  { href: '/theory', label: '📖 Теорія' },
-  { href: '/scenarios', label: '🎭 Сценарії' },
   { href: '/history', label: '📋 Історія' },
+  { href: '/scenarios', label: '🎭 Сценарії' },
 ];
 
 export default function NavBar() {
@@ -14,7 +13,7 @@ export default function NavBar() {
   return (
     <header className="appbar">
       <span className="appbar-title">
-        Моделювання енергетичної системи
+        Еволюційне моделювання слабконелінійних систем
       </span>
       <nav className="appbar-nav">
         {links.map(l => (

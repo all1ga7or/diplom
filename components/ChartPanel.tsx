@@ -79,19 +79,6 @@ export default function ChartPanel({
 
   const isPerturbTab = activeTab.startsWith('p_');
 
-  const chartDescs: Record<string, string> = {
-    bu: 'Порівняння адаптованої (Bu*) та базової (Bu₀) пристосованості системи на кожному кроці',
-    fitness: 'Значення цільової функції f(A,u), яку мінімізує ГА. Нижче = краще',
-    effect: 'Відсоткове покращення Bu* відносно базового Bu₀. Зелене = позитив, червоне = негатив',
-    A: 'Динаміка елементів матриці технологічних коефіцієнтів m×m по кроках',
-    B: 'Динаміка вектора виробництва по секторах (збурення β)',
-    C: 'Динаміка вектора вартості по секторах (збурення α)',
-    u: 'Оптимальний розподіл ресурсів u*, знайдений ГА на кожному кроці',
-    p_alpha: 'Коефіцієнти збурення вартості (α). Лінія 1.0 = без змін',
-    p_beta: 'Коефіцієнти збурення виробництва (β). Лінія 1.0 = без змін',
-    p_gamma: 'Коефіцієнти збурення технології (γ). Лінія 1.0 = без змін',
-  };
-
   const renderCustomLegend = (props: any, expectedKeys: string[], extraItems: any[] = []) => {
     const { payload } = props;
     if (!payload) return null;
@@ -121,18 +108,6 @@ export default function ChartPanel({
       </ul>
     );
   };
-
-  const getChartHeight = () => {
-    if (activeTab === 'A') {
-      return 220 + (dimension * dimension * 1.8);
-    }
-    if (dimension > 5) {
-      return 220 + (dimension * 3);
-    }
-    return 220;
-  };
-
-  const currentHeight = getChartHeight();
 
   const renderChart = () => {
     switch (activeTab) {
@@ -165,7 +140,7 @@ export default function ChartPanel({
         );
       case 'effect':
         return (
-          <ResponsiveContainer width="100%" height={currentHeight}>
+          <ResponsiveContainer width="100%" height={220}>
             <LineChart data={buData} margin={{ top: 5, right: 16, bottom: 5, left: 0 }}>
               <CartesianGrid stroke={GRID_COLOR} strokeDasharray="3 3" />
               <XAxis dataKey="t" stroke={TEXT_COLOR} tick={{ fontSize: 11 }} label={{ value: 'Крок t', position: 'insideBottom', offset: -2, fill: TEXT_COLOR, fontSize: 11 }} />
@@ -178,7 +153,7 @@ export default function ChartPanel({
         );
       case 'A':
         return (
-          <ResponsiveContainer width="100%" height={currentHeight}>
+          <ResponsiveContainer width="100%" height={220}>
             <LineChart data={AData} margin={{ top: 5, right: 16, bottom: 5, left: 0 }}>
               <CartesianGrid stroke={GRID_COLOR} strokeDasharray="3 3" />
               <XAxis dataKey="t" stroke={TEXT_COLOR} tick={{ fontSize: 11 }} />
@@ -194,7 +169,7 @@ export default function ChartPanel({
         );
       case 'B':
         return (
-          <ResponsiveContainer width="100%" height={currentHeight}>
+          <ResponsiveContainer width="100%" height={220}>
             <LineChart data={BData} margin={{ top: 5, right: 16, bottom: 5, left: 0 }}>
               <CartesianGrid stroke={GRID_COLOR} strokeDasharray="3 3" />
               <XAxis dataKey="t" stroke={TEXT_COLOR} tick={{ fontSize: 11 }} />
@@ -210,7 +185,7 @@ export default function ChartPanel({
         );
       case 'C':
         return (
-          <ResponsiveContainer width="100%" height={currentHeight}>
+          <ResponsiveContainer width="100%" height={220}>
             <LineChart data={CData} margin={{ top: 5, right: 16, bottom: 5, left: 0 }}>
               <CartesianGrid stroke={GRID_COLOR} strokeDasharray="3 3" />
               <XAxis dataKey="t" stroke={TEXT_COLOR} tick={{ fontSize: 11 }} />
@@ -226,7 +201,7 @@ export default function ChartPanel({
         );
       case 'u':
         return (
-          <ResponsiveContainer width="100%" height={currentHeight}>
+          <ResponsiveContainer width="100%" height={220}>
             <LineChart data={uData} margin={{ top: 5, right: 16, bottom: 5, left: 0 }}>
               <CartesianGrid stroke={GRID_COLOR} strokeDasharray="3 3" />
               <XAxis dataKey="t" stroke={TEXT_COLOR} tick={{ fontSize: 11 }} />
@@ -252,7 +227,7 @@ export default function ChartPanel({
   const renderPerturbChart = (data: ChartPoint[], symbol: string, baseColor: string) => {
     const keys = Array.from({ length: dimension }, (_, i) => `${symbol}${i + 1}`);
     return (
-      <ResponsiveContainer width="100%" height={currentHeight}>
+      <ResponsiveContainer width="100%" height={220}>
         <LineChart data={data} margin={{ top: 5, right: 16, bottom: 5, left: 0 }}>
           <CartesianGrid stroke={GRID_COLOR} strokeDasharray="3 3" />
           <XAxis dataKey="t" stroke={TEXT_COLOR} tick={{ fontSize: 11 }} label={{ value: 'Крок t', position: 'insideBottom', offset: -2, fill: TEXT_COLOR, fontSize: 11 }} />
@@ -313,10 +288,6 @@ export default function ChartPanel({
           )}
         </div>
       </div>
-
-      {chartDescs[activeTab] && (
-        <div className="chart-desc">{chartDescs[activeTab]}</div>
-      )}
 
       {hasData ? renderChart() : (
         <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center',
