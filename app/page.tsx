@@ -28,33 +28,6 @@ interface ManualState {
   currentStep: number;
 }
 
-function GettingStarted() {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="getting-started">
-      <button className="getting-started-btn" onClick={() => setOpen(!open)}>
-        <span>📖 Як користуватися симулятором</span>
-        <span style={{ transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'none', fontSize: '0.7rem' }}>▼</span>
-      </button>
-      {open && (
-        <div className="getting-started-body">
-          <ol>
-            <li><strong>Оберіть розмірність m</strong> — кількість секторів енергетичної системи (від 2 до 10).</li>
-            <li><strong>Налаштуйте параметри ГА</strong> — популяція, покоління, ймовірність мутації. Наведіть мишку на <span className="help-tip" style={{ display: 'inline-flex' }}>?</span> для підказок.</li>
-            <li><strong>Задайте матрицю A, вектори B, C</strong> — або скористайтесь кнопкою «🎲 Автозаповнення».</li>
-            <li><strong>Оберіть режим збурень</strong> — автоматичний (випадкові або сценарій) чи ручний (інтерактивний контроль).</li>
-            <li><strong>Натисніть «Запустити симуляцію»</strong> та спостерігайте за графіками й журналом у реальному часі.</li>
-          </ol>
-          <p style={{ marginTop: 8 }}>
-            Детальне пояснення математичної моделі та алгоритму — на сторінці{' '}
-            <a href="/theory" style={{ color: 'var(--accent)', textDecoration: 'none' }}>📖 Теорія</a>.
-          </p>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function Home() {
   const [running, setRunning] = useState(false);
   const [logs, setLogs] = useState<LogLine[]>([]);
@@ -409,14 +382,8 @@ export default function Home() {
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>
           Демонстраційно-навчальний симулятор для дослідження моделей та методів
-          {' · '}
-          <a href="/theory" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.78rem' }}>
-            📖 Детальна теорія →
-          </a>
         </p>
       </div>
-
-      <GettingStarted />
 
       <div className="two-col">
 
