@@ -123,8 +123,32 @@ export default function HistoryPage() {
     setLoadingDetail(false);
   }, []);
 
-  const loadRunAndNavigate = () => {
-    if (selected) router.push(`/?run=${selected.id}`);
+  const loadRunAndNavigate = async () => {
+    if (!selected || !detail) return;
+    try {
+      // Fetch the full config for the selected run
+      const res = await fetch(`/api/history/${selected.id}`);
+      const data = await res.json();
+      if (!data.config) return;
+
+      const cfg = data.config;
+      // Save replay data so the main page can auto-start with these params
+      sessionStorage.setItem('sim_replay', JSON.stringify({
+        dimension: cfg.dimension,
+        population: cfg.population,
+        generations: cfg.generations,
+        mutation: cfg.mutation,
+        disturbances: cfg.disturbances,
+        k: cfg.k,
+        A: cfg.A,
+        B: cfg.B,
+        C: cfg.C,
+      }));
+      router.push('/');
+    } catch {
+      // Fallback: just navigate
+      router.push('/');
+    }
   };
 
   if (loading) return (
