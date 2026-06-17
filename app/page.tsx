@@ -1,5 +1,5 @@
 'use client';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import SimulationForm from '@/components/SimulationForm';
 import ChartPanel from '@/components/ChartPanel';
 import LogPanel from '@/components/LogPanel';
@@ -368,6 +368,101 @@ export default function Home() {
     setManualState(null);
     addLog('✕ Ручний режим зупинено користувачем', 'warn');
   }, [addLog]);
+
+  // ============================================================
+  //  Replay saved experiment from history (no API calls)
+  // ============================================================
+  const replayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const replayFromHistory = useCallback((replay: {
+    runId: number;
+    dimension: number; population: number; generations: number;
+    mutation: number; disturbances: number; k: number;
+    A: number[][]; B: number[]; C: number[];
+    evolution: Array<{
+      t: number; fitness: number; utility: number; effect_percent: number;
+      u: number[]; A: number[][]; B: number[]; C: number[];
+      alpha: number[]; beta: number[]; gamma: number[];
+      elapsed_time: number;
+    }>;
+  }) => {
+    const params: RunParams = {
+      dimension: replay.dimension,
+      population: replay.population,
+      generations: replay.generations,
+      mutation: replay.mutation,
+      disturbances: replay.disturbances,
+      k: replay.k,
+    };
+    setRunning(true);
+    resetAll(params);
+    setDim(replay.dimension);
+
+    addLog(`▶ Відтворення експерименту Run #${replay.runId}`, 'accent');
+    addLog(`  m=${params.dimension}  T=${params.disturbances}  pop=${params.population}  gen=${params.generations}`, 'info');
+    addLog(`  k=${params.k.toFixed(2)}  mut=${params.mutation.toFixed(3)}`, 'info');
+    addLog('─'.repeat(48), 'divider');
+
+    const steps = replay.evolution;
+    let idx = 0;
+
+    const playNext = () => {
+      if (idx >= steps.length) {
+        setStats(prev => ({ ...prev, runId: replay.runId }));
+        addLog('■ Відтворення завершено', 'success');
+        addLog(`  Оригінальний Run ID: #${replay.runId}`, 'info');
+        setRunning(false);
+        return;
+      }
+
+      const step = steps[idx];
+      // Compute non_adapted_utility from effect_percent:
+      // effect_percent = ((utility - base) / |base|) * 100
+      // base = utility / (1 + effect_percent / 100)
+      const base = step.effect_percent !== 0
+        ? step.utility / (1 + step.effect_percent / 100)
+        : step.utility;
+
+      processStepResult({
+        t: step.t,
+        fitness: step.fitness,
+        utility: step.utility,
+        non_adapted_utility: base,
+        effect_percent: step.effect_percent,
+        u: step.u,
+        A: step.A,
+        B: step.B,
+        C: step.C,
+        alpha: step.alpha,
+        beta: step.beta,
+        gamma: step.gamma,
+        elapsed: step.elapsed_time,
+      }, params.disturbances);
+
+      idx++;
+      replayTimerRef.current = setTimeout(playNext, 150);
+    };
+
+    replayTimerRef.current = setTimeout(playNext, 200);
+  }, [addLog, resetAll, processStepResult]);
+
+  // Detect replay request on mount
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('sim_replay');
+      if (!raw) return;
+      sessionStorage.removeItem('sim_replay');
+      const replay = JSON.parse(raw);
+      if (replay.evolution && Array.isArray(replay.evolution)) {
+        // Full replay
+        setTimeout(() => replayFromHistory(replay), 200);
+      }
+    } catch { /* ignore */ }
+    return () => {
+      if (replayTimerRef.current) clearTimeout(replayTimerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ============================================================
   //  Main start handler — routes to auto or manual

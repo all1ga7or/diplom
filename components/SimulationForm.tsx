@@ -59,43 +59,28 @@ export default function SimulationForm({ onStart, disabled, activeScenario, onSc
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Detect replay request from History page
+  // Detect replay request from History page — populate form fields only
+  // (the actual replay animation is handled by page.tsx)
   useEffect(() => {
     try {
       const replayRaw = sessionStorage.getItem('sim_replay');
       if (!replayRaw) return;
-      sessionStorage.removeItem('sim_replay');
+      // Don't remove — page.tsx will read and remove it
 
       const replay = JSON.parse(replayRaw);
-      // Populate form with replayed config
-      setDimension(replay.dimension);
-      setPopulation(replay.population);
-      setGenerations(replay.generations);
-      setMutation(replay.mutation);
-      setDisturbances(replay.disturbances);
-      setK(replay.k);
-      setA(replay.A);
-      setB(replay.B);
-      setC(replay.C);
-      setManualMode(false);
-      onScenarioChange(null);
-
-      // Auto-start after a tick so React renders the populated state
-      setTimeout(() => {
-        onStart(
-          {
-            dimension: replay.dimension,
-            population: replay.population,
-            generations: replay.generations,
-            mutation: replay.mutation,
-            disturbances: replay.disturbances,
-            k: replay.k,
-          },
-          { A: replay.A, B: replay.B, C: replay.C },
-          null,
-          false
-        );
-      }, 100);
+      if (replay.dimension) {
+        setDimension(replay.dimension);
+        setPopulation(replay.population);
+        setGenerations(replay.generations);
+        setMutation(replay.mutation);
+        setDisturbances(replay.disturbances);
+        setK(replay.k);
+        setA(replay.A);
+        setB(replay.B);
+        setC(replay.C);
+        setManualMode(false);
+        onScenarioChange(null);
+      }
     } catch { /* ignore */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

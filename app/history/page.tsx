@@ -123,32 +123,25 @@ export default function HistoryPage() {
     setLoadingDetail(false);
   }, []);
 
-  const loadRunAndNavigate = async () => {
+  const loadRunAndNavigate = () => {
     if (!selected || !detail) return;
-    try {
-      // Fetch the full config for the selected run
-      const res = await fetch(`/api/history/${selected.id}`);
-      const data = await res.json();
-      if (!data.config) return;
 
-      const cfg = data.config;
-      // Save replay data so the main page can auto-start with these params
-      sessionStorage.setItem('sim_replay', JSON.stringify({
-        dimension: cfg.dimension,
-        population: cfg.population,
-        generations: cfg.generations,
-        mutation: cfg.mutation,
-        disturbances: cfg.disturbances,
-        k: cfg.k,
-        A: cfg.A,
-        B: cfg.B,
-        C: cfg.C,
-      }));
-      router.push('/');
-    } catch {
-      // Fallback: just navigate
-      router.push('/');
-    }
+    const cfg = detail.config as Record<string, unknown>;
+    // Save full replay data: config + all evolution steps
+    sessionStorage.setItem('sim_replay', JSON.stringify({
+      runId: selected.id,
+      dimension: cfg.dimension,
+      population: cfg.population,
+      generations: cfg.generations,
+      mutation: cfg.mutation,
+      disturbances: cfg.disturbances,
+      k: cfg.k,
+      A: cfg.A,
+      B: cfg.B,
+      C: cfg.C,
+      evolution: detail.evolution,
+    }));
+    router.push('/');
   };
 
   if (loading) return (
