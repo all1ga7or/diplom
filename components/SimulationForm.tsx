@@ -1,6 +1,9 @@
 'use client';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { RunParams, InitialData, Scenario } from '@/lib/types';
+import ScenarioPicker from '@/components/ScenarioPicker';
+
+const STORAGE_KEY = 'sim_form_state';
 
 interface Props {
   onStart: (params: RunParams, data: InitialData, scenario: Scenario | null, manualMode: boolean) => void;
@@ -17,20 +20,54 @@ function defaultVector(m: number): number[] {
   return Array(m).fill(0.25);
 }
 
-export default function SimulationForm({ onStart, disabled, activeScenario, onScenarioChange }: Props) {
-  const [dimension, setDimension] = useState(2);
-  const [population, setPopulation] = useState(50);
-  const [generations, setGenerations] = useState(50);
-  const [mutation, setMutation] = useState(0.05);
-  const [disturbances, setDisturbances] = useState(10);
-  const [k, setK] = useState(0.1);
-  const [manualMode, setManualMode] = useState(false);
+function loadSaved(): {
+  dimension: number; population: number; generations: number;
+  mutation: number; disturbances: number; k: number;
+  manualMode: boolean; A: number[][]; B: number[]; C: number[];
+  scenario: Scenario | null;
+} | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch { return null; }
+}
 
-  const [A, setA] = useState<number[][]>(defaultMatrix(2));
-  const [B, setB] = useState<number[]>(defaultVector(2));
-  const [C, setC] = useState<number[]>(defaultVector(2));
+export default function SimulationForm({ onStart, disabled, activeScenario, onScenarioChange }: Props) {
+  const saved = loadSaved();
+
+  const [dimension, setDimension] = useState(saved?.dimension ?? 2);
+  const [population, setPopulation] = useState(saved?.population ?? 50);
+  const [generations, setGenerations] = useState(saved?.generations ?? 50);
+  const [mutation, setMutation] = useState(saved?.mutation ?? 0.05);
+  const [disturbances, setDisturbances] = useState(saved?.disturbances ?? 10);
+  const [k, setK] = useState(saved?.k ?? 0.1);
+  const [manualMode, setManualMode] = useState(saved?.manualMode ?? false);
+
+  const [A, setA] = useState<number[][]>(saved?.A ?? defaultMatrix(2));
+  const [B, setB] = useState<number[]>(saved?.B ?? defaultVector(2));
+  const [C, setC] = useState<number[]>(saved?.C ?? defaultVector(2));
 
   const [autofilling, setAutofilling] = useState(false);
+
+  // Restore scenario from sessionStorage on mount
+  useEffect(() => {
+    if (saved?.scenario && !activeScenario) {
+      onScenarioChange(saved.scenario);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persist form state to sessionStorage on every change
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
+        dimension, population, generations, mutation, disturbances, k,
+        manualMode, A, B, C, scenario: activeScenario,
+      }));
+    } catch { /* ignore quota errors */ }
+  }, [dimension, population, generations, mutation, disturbances, k, manualMode, A, B, C, activeScenario]);
 
   const resizeDimension = useCallback((newM: number) => {
     setDimension(newM);
@@ -160,27 +197,11 @@ export default function SimulationForm({ onStart, disabled, activeScenario, onSc
             ✋ Ви керуватимете збуреннями вручну на кожному кроці через вертикальні повзунки α, β, γ
           </div>
         ) : (
-          <>
-            {activeScenario ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
-                <div className="scenario-card selected">
-                  <div className="scenario-card-name">✅ {activeScenario.name}</div>
-                  <div className="scenario-card-desc">{activeScenario.description}</div>
-                  <div className="scenario-card-m">m = {activeScenario.m}</div>
-                </div>
-                <button className="btn btn-ghost btn-sm" onClick={() => onScenarioChange(null)}>
-                  🎲 Скинути (випадкові збурення)
-                </button>
-              </div>
-            ) : (
-              <div style={{ color: 'var(--muted)', fontSize: '0.82rem', padding: '10px 0 2px' }}>
-                🎲 Режим випадкових збурень<br />
-                <a href="/scenarios" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.78rem' }}>
-                  → Перейти до менеджера сценаріїв
-                </a>
-              </div>
-            )}
-          </>
+          <ScenarioPicker
+            dimension={dimension}
+            activeScenario={activeScenario}
+            onSelect={onScenarioChange}
+          />
         )}
       </div>
 
